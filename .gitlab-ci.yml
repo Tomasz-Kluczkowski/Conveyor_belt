@@ -28,7 +28,8 @@ job:
   script:
     - pip install -r requirements.txt
     - flake8
-    # - pytest --cov=src --cov-branch --cov-report term
+    - pytest --cov=src --cov-branch --cov-report term
 
-#  after_script:
-#    - 
+  after_script:
+    - pip install codecov
+    - codecov --token='6a7bb911-e06d-478d-aab5-fc01f653edd8'
