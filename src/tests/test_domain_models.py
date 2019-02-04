@@ -7,7 +7,7 @@ from src.typing_definitions.custom_types import TypeId
 
 
 def basic_feed_func():
-    return 1
+    return 1  # pragma: no cover
 
 
 @pytest.fixture()
