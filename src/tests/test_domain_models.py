@@ -32,4 +32,3 @@ class TestFeeder:
         assert str(feeder_factory) == (
             f"<Feeder(id=feeder_id, components=['A', 'B'], feed_func=basic_feed_func)>"
         )
-
