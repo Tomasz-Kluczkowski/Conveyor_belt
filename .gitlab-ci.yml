@@ -28,6 +28,7 @@ job:
   script:
     - pip install -r requirements.txt
     - flake8
+    - pytest --cov=src --cov-branch --cov-report term
 
 #  after_script:
 #    - 
