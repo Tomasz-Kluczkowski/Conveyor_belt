@@ -20,7 +20,6 @@ class TestFeeder:
     def test_init(self, feeder_factory):
         assert feeder_factory.id == 'feeder_id'
         assert feeder_factory.components == ['A', 'B']
-        assert feeder_factory.feed_func == basic_feed_func
 
     @mock.patch('uuid.uuid4')
     def test_auto_id(self, mock_uuid4):
@@ -28,7 +27,19 @@ class TestFeeder:
         feeder = Feeder(['A', 'B'], basic_feed_func)
         assert feeder.id == 'feeder_id'
 
-    def test_feeder_repr_method(self, feeder_factory):
+    def test_repr_method(self, feeder_factory):
         assert str(feeder_factory) == (
             f"<Feeder(id=feeder_id, components=['A', 'B'], feed_func=basic_feed_func)>"
         )
+
+    def test_feed(self, feeder_factory):
+        assert feeder_factory.feed() == 1
+
+    @mock.patch('src.domain_models.feeder.random')
+    def test_basic_feed(self, mock_random):
+        mock_random.choice.side_effect = ['E', 'E', 'A', 'B']
+        feeder = Feeder(['A', 'B', 'E'])
+        result = []
+        for i in range(4):
+            result.append(feeder.feed())
+        assert result == ['E', 'E', 'A', 'B']
