@@ -3,6 +3,7 @@ from unittest import mock
 import pytest
 
 from src.domain_models.feeder import Feeder
+from src.domain_models.receiver import Receiver
 from src.typing_definitions.custom_types import TypeId
 
 
@@ -14,6 +15,12 @@ def basic_feed_func():
 def feeder_factory():
     feeder = Feeder(['A', 'B'], basic_feed_func, TypeId('feeder_id'))
     return feeder
+
+
+@pytest.fixture()
+def receiver_factory():
+    receiver = Receiver(TypeId('receiver_id'))
+    return receiver
 
 
 class TestFeeder:
@@ -43,3 +50,9 @@ class TestFeeder:
         for i in range(4):
             result.append(feeder.feed())
         assert result == ['E', 'E', 'A', 'B']
+
+
+class TestReceiver:
+    def test_init(self, feeder_factory):
+        assert feeder_factory.id == 'feeder_id'
+        assert feeder_factory.components == ['A', 'B']
