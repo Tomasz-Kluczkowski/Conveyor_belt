@@ -10,4 +10,12 @@ class Feeder:
         self.feed_func = feed_func
 
     def __repr__(self):
-        return f'<Feeder(id={self.id}, components={self.components}, feed_func={self.feed_func.__name__})>'
+        return f'<Feeder(id={self.id}, components={self.components}, feed_func={self.feed_func.__name__})>' # super long comment
+
+    def dummy_method(self, a, b):
+        if a > 0:
+            return 1
+        elif b > 9:
+            return 2
+        else:
+            return 4
