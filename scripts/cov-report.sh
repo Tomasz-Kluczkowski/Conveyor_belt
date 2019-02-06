@@ -22,7 +22,7 @@ COV_PATH="$REPORT_DIR"/"$COV_FILE"
 
 # Create reports folder if not present.
 if [[ ! -d "$REPORT_DIR" ]]; then
-    mkdir reports
+    mkdir "$REPORT_DIR"
 fi
 
 echo "Running pytest with coverage"
