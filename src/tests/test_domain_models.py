@@ -34,3 +34,12 @@ class TestFeeder:
 
     def test_feed(self, feeder_factory):
         assert feeder_factory.feed() == 1
+
+    @mock.patch('src.domain_models.feeder.random')
+    def test_basic_feed(self, mock_random):
+        mock_random.choice.side_effect = ['E', 'E', 'A', 'B']
+        feeder = Feeder(['A', 'B', 'E'])
+        result = []
+        for i in range(4):
+            result.append(feeder.feed())
+        assert result == ['E', 'E', 'A', 'B']
