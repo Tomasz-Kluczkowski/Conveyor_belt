@@ -53,6 +53,11 @@ class TestFeeder:
 
 
 class TestReceiver:
-    def test_init(self, feeder_factory):
-        assert feeder_factory.id == 'feeder_id'
-        assert feeder_factory.components == ['A', 'B']
+    def test_init(self, receiver_factory):
+        assert receiver_factory.id == 'receiver_id'
+        assert receiver_factory.received_items == []
+
+    def test_repr_method(self, receiver_factory):
+        assert str(receiver_factory) == (
+            f'<Receiver(id=receiver_id, received_items=[])>'
+        )

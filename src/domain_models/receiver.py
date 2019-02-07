@@ -8,9 +8,13 @@ class Receiver:
     Use to receive items from the conveyor belt. Stores items in order of appearance and provides methods to obtain
     efficiency statistics for the plant operation.
     """
-    def __init__(self, id: TypeId = None):
-        self.id = id if id else uuid.uuid4()
+    def __init__(self, id_: TypeId = None):
+        self.id = id_ if id_ else uuid.uuid4()
         self.__received_items: List[Any] = []
 
-    # def __repr__(self):
-    #     return f'<Receiver(id={self.id}, components={self.components}, feed_func={self.__feed_func.__name__})>'
+    def __repr__(self):
+        return f'<Receiver(id={self.id}, received_items={self.received_items})>'
+
+    @property
+    def received_items(self):
+        return self.__received_items

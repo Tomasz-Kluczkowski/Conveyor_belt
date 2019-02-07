@@ -9,8 +9,8 @@ class Feeder:
     Use to provide feed for the conveyor belt. If no feed function specified will select random item from components
     list and return every time feed() is called on an instance.
     """
-    def __init__(self, components: List, feed_func: Callable = None, id: TypeId = None):
-        self.id = id if id else uuid.uuid4()
+    def __init__(self, components: List, feed_func: Callable = None, id_: TypeId = None):
+        self.id = id_ if id_ else uuid.uuid4()
         self.components = components
         self.__feed_func = feed_func if feed_func else self.__basic_feed_func
 
