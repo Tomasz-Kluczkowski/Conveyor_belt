@@ -1,4 +1,3 @@
-import random
 import uuid
 from typing import List, Any
 from src.typing_definitions.custom_types import TypeId
@@ -15,4 +14,3 @@ class Receiver:
 
     # def __repr__(self):
     #     return f'<Receiver(id={self.id}, components={self.components}, feed_func={self.__feed_func.__name__})>'
-
