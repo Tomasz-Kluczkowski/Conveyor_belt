@@ -45,6 +45,7 @@
 
 # SCRIPT - feel free to enhance it!
 
+# Set default variables
 REPORT_DIR='diff_reports/'
 LINT_FILE='diff_lint_report.html'
 COV_FILE='diff_coverage_report.html'
@@ -53,16 +54,28 @@ COMPARE_BRANCH=origin/master   # Change to whatever is your base branch. i.e. or
 LINT_PATH="$REPORT_DIR"/"$LINT_FILE"
 COV_PATH="$REPORT_DIR"/"$COV_FILE"
 
+# Parse CLI arguments
+while [[ "$#" > 0 ]]; do case $1 in
+  -t|--test) TEST=true;;
+  -cb|--compare-branch) COMPARE_BRANCH="$2"; shift;;
+  *) echo "Unknown parameter passed: $1"; exit 1;;
+esac; shift; done
+
+#usage:
+#./script.sh -d dev -u
+#
+## OR:
+#
+#./script.sh --deploy dev --uglify
+
 # Find diff in code or any new staged/unstaged files present in the branch - needed to rerun pytest with coverage and
-# have an updated# coverage.xml report.
-#NOTE: Once files are committed, they no longer show up in the diff reports - so make sure you fix the flaws before or
-# this script will provide no value!
-RERUN_TESTS=false
+# have an updated coverage.xml report.
+#NOTE: ONCE FILES ARE COMMITTED THE TEST SUITE WILL NOT BE RERUN AUTOMATICALLY!
+# THE ONUS IS ON YOU TO FIX LINT AND COVERAGE ISSUES BEFORE YOU COMMIT OR DELETE coverage.xml FILE AND RERUN THIS SCRIPT
+# WHEN YOU ARE READY FOR FINAL CHECKS.
 DIFF=$(git diff HEAD)
 if [[ ${#DIFF} > 0 ]]; then
     echo "Found diff to the last commit."
-    RERUN_TESTS=true
-    echo "$RERUN_TESTS"
 fi
 
 # Create reports folder if not present.
@@ -70,9 +83,9 @@ if [[ ! -d "$REPORT_DIR" ]]; then
     mkdir "$REPORT_DIR"
 fi
 
-# Create coverage.xml - project's coverage report if not present or if any new tracked files were added to the branch.
+# Create coverage.xml - project's coverage report if not present or files were modified/added/deleted in the branch.
 # IMPORTANT: Delete this file and rerun the script after any merge into your work branch to have the newest report.
-if [[ ! -f coverage.xml  || ${#STAGED_FILES} > 0 || ${#DIFF} > 0 ]]; then
+if [[ ! -f coverage.xml  || ${#DIFF} > 0  || ${#TEST} = true ]]; then
     echo "Running pytest and generating project's coverage report..."
     pytest --cov=src --cov-branch --cov-report html --cov-report term:skip-covered --cov-report xml
 #    pytest integration_tests/ platform/test data_integration/data_integration_test/ --cov-branchh --cov=flexciton --cov=camira_data_integration/src/camira_data_integration --cov=data_integration/src/data_integration --cov-report term --cov-report html --cov-report xml
@@ -88,8 +101,8 @@ echo "Deleting .coverage* files..."
 rm -rf .coverage*
 
 # Open reports in google chrome - opens 2 new windows every time - improvement to refresh on file change needed.
-google-chrome "$LINT_PATH"
-google-chrome "$COV_PATH"
+#google-chrome "$LINT_PATH"
+#google-chrome "$COV_PATH"
 #open "$LINT_PATH"
 #open "$COV_PATH"
 
