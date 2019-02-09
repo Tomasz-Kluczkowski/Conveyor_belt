@@ -1,28 +1,34 @@
 #!/usr/bin/env bash
 
-#INFO
+# INSTRUCTIONS
 
 # Command line arguments:
-# -t or --test
-#   to force rerun of test suite (and regeneration of the coverage.xml file).
+
+# -ft or --force-test
+#   to force rerun of the test suite (and regeneration of the coverage.xml file).
+
+# -nt or --no-test
+#   to disable testing. If both -ft and -nt are specified we exit with an error.
 
 # -cb <branch> or --compare-branch <branch> (i.e.: -cb upstream/master)
-#   to change the default compare branch.
+#   to change the default compare branch. If always using the same one just set it in the variables below.
+
+# Info
 
 # Use this script to run tests, generate coverage report and show lint / coverage ONLY for the diff on current branch.
 # By default the diff is measured to origin/master - USE COMPARE_BRANCH variable to set a non standard main branch.
-# It is now set to origin/develop which is what we use but if you based your branch on something else - use that.
 
-# Needs flake8, pytest-cov and diff-cover packages to work - use pip install to get them.
-# pip install flake8, pytest-cov, diff-cover (probably we just need diff-cover as the others are already installed)
+# Script needs flake8, pytest-cov and diff-cover packages to work - use pip install to get them.
+# pip install flake8 pytest-cov diff-cover
 
 # The diff-cover command requires project's coverage report which is stored in coverage.xml file.
-# This will be created on first run for the branch (make sure you add coverage.xml to .gitignore) by pytest-cov.
+# This will be created by pytest-cov (make sure you add coverage.xml to global .gitignore - info below).
+
 # If you had to merge develop/master/etc. into your current branch during work,
-# run diff_cov.sh again with -t argument to measure project's coverage again (otherwise the results will be skewed)
+# run diff_cov.sh with -ft argument to measure project's coverage again (otherwise the results will be skewed).
 
 # If you have 100% lint quality and 100% code coverage in your diff the reports will only show file names present in
-# your diff and 100% next# to them.
+# your diff and 100% next to them.
 
 # If you miss anything in any file it will be listed with the violation's description for the lint report or missed
 # coverage lines in the coverage report.
@@ -31,15 +37,20 @@
 
 # The script will create two folders:
 
-# diff_reports with 2 files - pep8 violations and code coverage misses for the diff on your branch
-# htmlcov - code coverage for entire project
+# diff_reports with 2 files:
+#   diff_lint_report.html (pep8 violations)
+#   diff_coverage_report.html (code coverage misses for the diff on your branch)
+# Feel free to change those names as you wish.
 
-# Also coverage will create files:
-# .coverage
-# .coverage.<name of your machine>
-# coverage.xml
+# htmlcov - code coverage folder for the entire project
 
-# Add those two folders and files to global gitignore:
+# Also coverage package itself will create files:
+#   .coverage
+#   .coverage.<name of your machine>
+#   coverage.xml
+# The .coverage* files are not needed and will get deleted after the script run.
+
+# Add those two folders and files to global .gitignore to avoid polluting the project:
 # - subl ~/.gitignore_global - to edit file, below is my global gitignore contents for now:
 # .idea/
 # .coverage.*
@@ -59,22 +70,25 @@ COMPARE_BRANCH=origin/master   # Change to whatever is your base branch. i.e. or
                                 # Make sure variable is not a string - no quotes here!!!
 LINT_PATH="$REPORT_DIR"/"$LINT_FILE"
 COV_PATH="$REPORT_DIR"/"$COV_FILE"
-TEST=false
+FORCE_TEST=false
+NO_TEST=false
 
-# TODO: ADD NO TEST ARGUMENT OVERRIDING -t option.
 # Parse CLI arguments
 while [[ "$#" > 0 ]]; do case $1 in
-  -t|--test) TEST=true;;
+  -ft|--force-test) FORCE_TEST=true;;
   -nt|--no-test) NO_TEST=true;;
   -cb|--compare-branch) COMPARE_BRANCH="$2"; shift;;
   *) echo "Unknown parameter passed: $1"; exit 1;;
 esac; shift; done
 
-# Find diff in code or any new staged/unstaged files present in the branch - needed to rerun pytest with coverage and
-# have an updated coverage.xml report.
-#NOTE: ONCE FILES ARE COMMITTED THE TEST SUITE WILL NOT BE RERUN AUTOMATICALLY!
-# THE ONUS IS ON YOU TO FIX LINT AND COVERAGE ISSUES BEFORE YOU COMMIT OR DELETE coverage.xml FILE AND RERUN THIS SCRIPT
-# WHEN YOU ARE READY FOR FINAL CHECKS.
+# Sanity checks.
+if [[ "$FORCE_TEST" == true && "$NO_TEST" == true ]]; then
+    echo "You have specified mutually exclusive arguments: force-test == true and no-test == true. Unable to continue."
+    exit 1
+fi
+
+# Find if there is a diff on current branch.
+# TODO: find if we can use semantic diff checking and reduce amount of tests to rerun.
 DIFF=$(git diff HEAD)
 if [[ ${#DIFF} > 0 ]]; then
     echo "Found diff to the last commit."
@@ -86,11 +100,12 @@ if [[ ! -d "$REPORT_DIR" ]]; then
 fi
 
 # Create coverage.xml - project's coverage report if not present or files were modified/added/deleted in the branch.
-# IMPORTANT: Delete this file and rerun the script after any merge into your work branch to have the newest report.
-if [[ ! -f coverage.xml  || ${#DIFF} > 0  || "$TEST" == true ]]; then
-    echo "Running pytest and generating project's coverage report agains branch: $COMPARE_BRANCH..."
+# IMPORTANT: rerun the script with -ft option after any merge into your work branch to have the newest report.
+if [[ "$NO_TEST" == true ]]; then
+    echo "Testing disabled. Not running test suite. Using existing coverage.xml report."
+elif [[ (! -f coverage.xml  || ${#DIFF} > 0  || "$FORCE_TEST" == true) ]]; then
+    echo "Running pytest and generating project's coverage report against branch: $COMPARE_BRANCH..."
     pytest --cov=src --cov-branch --cov-report html --cov-report term:skip-covered --cov-report xml
-#    pytest integration_tests/ platform/test data_integration/data_integration_test/ --cov-branchh --cov=flexciton --cov=camira_data_integration/src/camira_data_integration --cov=data_integration/src/data_integration --cov-report term --cov-report html --cov-report xml
 fi
 
 echo "Running diff lint check..."
@@ -103,9 +118,11 @@ echo "Deleting .coverage* files..."
 rm -rf .coverage*
 
 # Open reports in google chrome - opens 2 new windows every time - improvement to refresh on file change needed.
-#google-chrome "$LINT_PATH"
-#google-chrome "$COV_PATH"
-#open "$LINT_PATH"
-#open "$COV_PATH"
-
-
+OS=`uname`
+if [[ "$OS" == "Darwin" ]]; then
+    open "$LINT_PATH"
+    open "$COV_PATH"
+elif [[ "$OS" == "Linux" ]]; then
+    google-chrome "$LINT_PATH"
+    google-chrome "$COV_PATH"
+fi
