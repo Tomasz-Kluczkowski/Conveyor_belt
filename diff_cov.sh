@@ -53,6 +53,7 @@ COMPARE_BRANCH=origin/master   # Change to whatever is your base branch. i.e. or
                                 # Make sure variable is not a string - no quotes here!!!
 LINT_PATH="$REPORT_DIR"/"$LINT_FILE"
 COV_PATH="$REPORT_DIR"/"$COV_FILE"
+TEST=false
 
 # Parse CLI arguments
 while [[ "$#" > 0 ]]; do case $1 in
@@ -86,7 +87,7 @@ fi
 
 # Create coverage.xml - project's coverage report if not present or files were modified/added/deleted in the branch.
 # IMPORTANT: Delete this file and rerun the script after any merge into your work branch to have the newest report.
-if [[ ! -f coverage.xml  || ${#DIFF} > 0  || ${#TEST} = true ]]; then
+if [[ ! -f coverage.xml  || ${#DIFF} > 0  || TEST ]]; then
     echo "Running pytest and generating project's coverage report..."
     pytest --cov=src --cov-branch --cov-report html --cov-report term:skip-covered --cov-report xml
 #    pytest integration_tests/ platform/test data_integration/data_integration_test/ --cov-branchh --cov=flexciton --cov=camira_data_integration/src/camira_data_integration --cov=data_integration/src/data_integration --cov-report term --cov-report html --cov-report xml
