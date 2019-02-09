@@ -18,3 +18,6 @@ class Receiver:
     @property
     def received_items(self):
         return self.__received_items
+
+    def receive(self, item):
+        self.__received_items.append(item)
