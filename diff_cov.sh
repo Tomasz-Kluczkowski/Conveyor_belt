@@ -2,6 +2,13 @@
 
 #INFO
 
+# Command line arguments:
+# -t or --test
+#   to force rerun of test suite (and regeneration of the coverage.xml file).
+
+# -cb <branch> or --compare-branch <branch> (i.e.: -cb upstream/master)
+#   to change the default compare branch.
+
 # Use this script to run tests, generate coverage report and show lint / coverage ONLY for the diff on current branch.
 # By default the diff is measured to origin/master - USE COMPARE_BRANCH variable to set a non standard main branch.
 # It is now set to origin/develop which is what we use but if you based your branch on something else - use that.
@@ -12,8 +19,7 @@
 # The diff-cover command requires project's coverage report which is stored in coverage.xml file.
 # This will be created on first run for the branch (make sure you add coverage.xml to .gitignore) by pytest-cov.
 # If you had to merge develop/master/etc. into your current branch during work,
-# delete coverage.xml and run diff_cov.sh again to measure project's coverage again (otherwise the results will be
-# skewed)
+# run diff_cov.sh again with -t argument to measure project's coverage again (otherwise the results will be skewed)
 
 # If you have 100% lint quality and 100% code coverage in your diff the reports will only show file names present in
 # your diff and 100% next# to them.
@@ -55,20 +61,13 @@ LINT_PATH="$REPORT_DIR"/"$LINT_FILE"
 COV_PATH="$REPORT_DIR"/"$COV_FILE"
 TEST=false
 
+# TODO: ADD NO TEST ARGUMENT OVERRIDING -t option.
 # Parse CLI arguments
 while [[ "$#" > 0 ]]; do case $1 in
   -t|--test) TEST=true;;
   -cb|--compare-branch) COMPARE_BRANCH="$2"; shift;;
   *) echo "Unknown parameter passed: $1"; exit 1;;
 esac; shift; done
-
-echo "TEST is now: $TEST"
-#usage:
-#./script.sh -d dev -u
-#
-## OR:
-#
-#./script.sh --deploy dev --uglify
 
 # Find diff in code or any new staged/unstaged files present in the branch - needed to rerun pytest with coverage and
 # have an updated coverage.xml report.
@@ -88,7 +87,7 @@ fi
 # Create coverage.xml - project's coverage report if not present or files were modified/added/deleted in the branch.
 # IMPORTANT: Delete this file and rerun the script after any merge into your work branch to have the newest report.
 if [[ ! -f coverage.xml  || ${#DIFF} > 0  || "$TEST" == true ]]; then
-    echo "Running pytest and generating project's coverage report..."
+    echo "Running pytest and generating project's coverage report agains branch: $COMPARE_BRANCH..."
     pytest --cov=src --cov-branch --cov-report html --cov-report term:skip-covered --cov-report xml
 #    pytest integration_tests/ platform/test data_integration/data_integration_test/ --cov-branchh --cov=flexciton --cov=camira_data_integration/src/camira_data_integration --cov=data_integration/src/data_integration --cov-report term --cov-report html --cov-report xml
 fi
