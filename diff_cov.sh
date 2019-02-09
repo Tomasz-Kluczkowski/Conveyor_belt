@@ -65,6 +65,7 @@ TEST=false
 # Parse CLI arguments
 while [[ "$#" > 0 ]]; do case $1 in
   -t|--test) TEST=true;;
+  -nt|--no-test) NO_TEST=true;;
   -cb|--compare-branch) COMPARE_BRANCH="$2"; shift;;
   *) echo "Unknown parameter passed: $1"; exit 1;;
 esac; shift; done
