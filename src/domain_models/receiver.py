@@ -21,3 +21,6 @@ class Receiver:
 
     def receive(self, item):
         self.__received_items.append(item)
+
+    def dummy(self):
+        return 1
