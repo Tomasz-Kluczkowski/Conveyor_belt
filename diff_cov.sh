@@ -61,6 +61,7 @@ while [[ "$#" > 0 ]]; do case $1 in
   *) echo "Unknown parameter passed: $1"; exit 1;;
 esac; shift; done
 
+echo "TEST is now: $TEST"
 #usage:
 #./script.sh -d dev -u
 #
