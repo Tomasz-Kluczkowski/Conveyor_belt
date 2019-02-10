@@ -66,4 +66,3 @@ class TestWorker:
         assert str(basic_worker) == (
             f"<Worker(id=worker_id, name='Tomek', left=None, right=None)>"
         )
-
