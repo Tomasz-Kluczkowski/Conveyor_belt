@@ -76,6 +76,7 @@ NO_LINES_MSG='No lines with'
 # Variables
 force_test=false
 no_test=false
+last_commit=false
 lint_diff=''
 coverage_diff=''
 declare -A browser_commands=( ["Linux"]=google-chrome ["Darwin"]=open )
@@ -108,6 +109,7 @@ while [[ "$#" > 0 ]]; do case $1 in
   -ft|--force-test) force_test=true;;
   -nt|--no-test) no_test=true;;
   -cb|--compare-branch) COMPARE_BRANCH="$2"; shift;;
+  -lc|--last-commit) last_commit=true;;
   *) echo "Unknown parameter passed: $1"; exit 1;;
 esac; shift; done
 
@@ -117,9 +119,15 @@ if [[ "$force_test" == true && "$no_test" == true ]]; then
     exit 1
 fi
 
-# Find if there is a diff on current branch. Looks at the difference to last commit.
 # TODO: find if we can use semantic diff checking and reduce amount of tests to rerun.
-diff=$(git diff HEAD)
+# Find if there is a diff on current branch.
+# Looks at the difference to the last commit if -lc or --last-commit option used.
+if [[ "$last_commit" == true ]]; then
+    diff=$(git diff)
+else
+    diff=$(git diff ${COMPARE_BRANCH}...HEAD)
+fi
+
 if [[ ${#diff} > 0 ]]; then
     echo "Found diff to the last commit."
 fi
