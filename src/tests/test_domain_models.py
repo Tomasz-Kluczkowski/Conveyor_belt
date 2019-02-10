@@ -66,7 +66,4 @@ class TestWorker:
         assert str(basic_worker) == (
             f"<Worker(id=worker_id, name='Tomek', left=None, right=None)>"
         )
-    #
-    # def test_receive(self, receiver_factory):
-    #     receiver_factory.receive('A')
-    #     assert receiver_factory.received_items == ['A']
+
