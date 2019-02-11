@@ -13,6 +13,11 @@
 # -cb <branch> or --compare-branch <branch> (i.e.: -cb upstream/master)
 #   to change the default compare branch. If always using the same one just set it in the variables below.
 
+# -lc or --last-commit
+#   to check the diff between most recent changes and the last commit on current branch.
+#   This is used to determine if tests should be rerun. By default we check between last commit on current branch and
+#   the point when we diverged from the compare branch.
+
 # Info
 
 # Use this script to run tests, generate coverage report and show lint / coverage ONLY for the diff on current branch.
@@ -27,13 +32,10 @@
 # If you had to merge develop/master/etc. into your current branch during work,
 # run diff_cov.sh with -ft argument to measure project's coverage again (otherwise the results will be skewed).
 
-# If you have 100% lint quality and 100% code coverage in your diff the reports will only show file names present in
-# your diff and 100% next to them.
+# If you have 100% lint quality and 100% code coverage in your diff you should see a message and a :),
+# in other cases report(s) will be opened in a browser.
 
-# If you miss anything in any file it will be listed with the violation's description for the lint report or missed
-# coverage lines in the coverage report.
-
-# Partially covered code is also measured but all missed lines are shown as red (not yellow).
+# Partially covered code is also measured but all missed lines are shown as red (not combination of red/yellow).
 
 # The script will create two folders:
 
@@ -63,6 +65,7 @@
 # SCRIPT - feel free to enhance it!
 
 # Defaults & constants
+COV_CONFIG_FILE=setup.cfg # Path to coverage config file
 REPORT_DIR='diff_reports/'
 LINT_FILE='diff_lint_report.html'
 COV_FILE='diff_coverage_report.html'
@@ -85,7 +88,7 @@ declare -a commands=()
 
 
 function display_results() {
-    # Add browser launching commands for each report not containing no lines message.
+    # Add browser launching commands for each report.
     for key in ${!diffs[@]}; do
         if [[ ${diffs[$key]} != *${NO_LINES_MSG}* ]]; then
             command=$(${browser_commands[$OS]} ${report_files[$key]})
@@ -97,7 +100,7 @@ function display_results() {
         echo "No issues found to report :). Good work!"
         return 0
     fi
-    # Launch browser commands.
+    # Show report(s) in browser.
     for command in ${commands[@]}; do
         command
     done
@@ -115,13 +118,13 @@ esac; shift; done
 
 # Sanity checks.
 if [[ "$force_test" == true && "$no_test" == true ]]; then
-    echo "You have specified mutually exclusive arguments: force-test == true and no-test == true. Unable to continue."
+    echo "You have specified mutually exclusive arguments: force-test == true and no-test == true."
+    echo "Unable to continue."
     exit 1
 fi
 
-# TODO: find if we can use semantic diff checking and reduce amount of tests to rerun.
+# TODO: find if we can use semantic or file based mapping to tests and reduce amount of tests to rerun.
 # Find if there is a diff on current branch.
-# Looks at the difference to the last commit if -lc or --last-commit option used.
 if [[ "$last_commit" == true ]]; then
     diff=$(git diff)
 else
@@ -129,7 +132,7 @@ else
 fi
 
 if [[ ${#diff} > 0 ]]; then
-    echo "Found diff to the last commit."
+    echo "Found diff on current branch."
 fi
 
 # Create reports folder if not present.
@@ -140,10 +143,20 @@ fi
 # Create coverage.xml - project's coverage report if not present or files were modified/added/deleted in the branch.
 # IMPORTANT: rerun the script with -ft option after any merge into your work branch to have the newest report.
 if [[ "$no_test" == true ]]; then
+    if [[ ! -f coverage.xml ]]; then
+        echo "You have disabled testing but coverage.xml file is missing and is required for generating reports."
+        echo "Consider running this script with -ft option to create coverage.xml file."
+        echo "Unable to continue."
+        exit 1
+    fi
     echo "Testing disabled. Not running test suite. Using existing coverage.xml report."
 elif [[ (! -f coverage.xml  || ${#diff} > 0  || "$force_test" == true) ]]; then
     echo "Running pytest and generating project's coverage report against branch: $COMPARE_BRANCH..."
-    pytest --cov-config=setup.cfg --cov=src --cov-branch --cov-report html --cov-report term --cov-report xml
+    coverage run -m pytest
+    coverage report
+    coverage html
+    coverage xml
+#    pytest --cov-config=${COV_CONFIG_FILE} --cov=src --cov-branch --cov-report html --cov-report term --cov-report xml
 fi
 
 echo "Running diff lint check..."
