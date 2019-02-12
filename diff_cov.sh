@@ -206,7 +206,7 @@ if [[ "$no_test" == true ]]; then
     echo "Testing disabled. Not running test suite. Using existing coverage.xml report."
 elif [[ (! -f coverage.xml  || ${#diff} > 0  || "$force_test" == true) ]]; then
     echo "Running pytest and generating project's coverage report against branch: $COMPARE_BRANCH..."
-    pytest --cov-config ${COV_CONFIG_FILE}
+    pytest --cov-config ${COV_CONFIG_FILE} --cov --cov-report term-missing --cov-report xml
 fi
 
 echo "Running diff lint check..."
