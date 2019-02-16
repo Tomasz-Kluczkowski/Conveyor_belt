@@ -3,14 +3,13 @@
 # INSTRUCTIONS
 
 # !!!INSTALL THIS FIRST!!!
-# Script needs flake8, pytest-cov, pytest-testmon and diff-cover packages to work - use pip install to get them.
-# pip install flake8 pytest-cov diff-cover pytest-testmon
+# Script needs flake8, pytest-cov, and diff-cover packages to work - use pip install to get them.
+# pip install flake8 pytest-cov diff-cover
 
 # COMMAND LINE ARGUMENTS:
 
 # -ft or --force-test
-#   to force rerun of the test suite (since we are using pytest-testmon to selectively run tests this may not run
-#   all tests. To start from scratch  use -cr option).
+#   to force rerun of the test suite. To start from scratch  use -cr option).
 
 # -nt or --no-test
 #   to disable testing (if you just want to refresh previous results. If both -ft and -nt are specified we exit with an error.
@@ -24,22 +23,13 @@
 #   the point when we diverged from the compare branch.
 
 # -cr or --clean-run
-#   to delete: diff_reports folder and .testmondata, .coverage, .coverage.*, coverage.xml files and rerun test suite.
+#   to delete: diff_reports folder and .coverage, .coverage.*, coverage.xml files and rerun test suite.
 
 # GENERAL INFO
 
 # Use this script to run tests, generate coverage report and show lint / coverage ONLY for the diff on current branch.
 # By default the diff is measured to origin/develop - USE COMPARE_BRANCH variable or -cb option to set a non standard
 # comparison branch.
-
-# The first run is the most important one as it will build the necessary datafiles (takes about 2 mins).
-
-# ON PYTEST-TESTMON
-
-# I have added pytest-testmon provisionally as a new feature - this needs monitoring but should cut the test times to an
-# absolute minimum required. This package builds an sqlite database of code to test dependencies (.testmondata file) and
-# subsequent runs of the script should only execute tests if anything influenced that database (although if you hit
-# code that runs slow tests it will take some time).
 
 # ON DIFF-COVER
 
@@ -61,34 +51,29 @@
 
 # CHANGES TO FILE STRUCTURE
 
-# The script will create 2 folders:
+# The script will create a new folder:
 
 # diff_reports with 2 files:
 #   diff_lint_report.html (pep8 violations)
 #   diff_coverage_report.html (code coverage misses for the diff on your branch)
 # Feel free to change those names as you wish.
 
-# .tmontmp - temporary files for testmon
-
 # Also coverage package itself will create files:
 #   .coverage
 #   .coverage.<name of your machine>
 #   coverage.xml
-# The .coverage* files are not needed and will get deleted after each script run.
+# The .coverage* files are not needed and will get deleted after each script run (we keep coverage.xml).
 
 # ADD STUFF TO GLOBAL .gitignore
 
-# Add the diff_reports/.tmontmp folder and files to global .gitignore to avoid polluting the project:
+# Add the diff_reports folder and files to global .gitignore to avoid polluting the project:
 # - subl ~/.gitignore_global - to edit file, below is my global gitignore contents for now:
 # .idea/
 # .coverage.*
-# .testmondata
-# .tmontmp/
 # coverage.xml
 # diff_reports/
 
 # git config --global core.excludesfile ~/.gitignore_global - to add to git
-
 
 
 # SCRIPT - feel free to enhance it!
@@ -141,8 +126,6 @@ function make_clean_run() {
     rm -rf coverage.xml
     rm -rf .coverage.*
     rm -rf .coverage
-    rm -rf .testmondata
-    rm -rf .tmontmp/
 }
 
 
@@ -176,11 +159,18 @@ if [[ "$force_test" == true && "$no_test" == true ]]; then
     exit 1
 fi
 
-# Find if there is a diff on current branch.
+#Set git command as per CLI arguments used.
 if [[ "$last_commit" == true ]]; then
-    diff=$(git diff)
+    diff_cmd=(git diff)
 else
-    diff=$(git diff ${COMPARE_BRANCH}...HEAD)
+    diff_cmd=(git diff ${COMPARE_BRANCH}...HEAD)
+fi
+
+# Find if there is a diff on current branch.
+diff=$(${diff_cmd[@]}) || error=$?
+if [[ ${error} ]]; then
+    echo "Error: ${error}"
+    exit 1
 fi
 
 if [[ ${#diff} > 0 ]]; then
