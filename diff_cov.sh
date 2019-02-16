@@ -85,8 +85,9 @@ LINT_FILE='diff_lint_report.html'
 COV_FILE='diff_coverage_report.html'
 COMPARE_BRANCH=origin/master   # Change to whatever is your base branch. i.e. origin/develop etc.
                                 # Make sure variable is not a string - no quotes here!!!
-LINT_PATH="$REPORT_DIR"/"$LINT_FILE"
-COV_PATH="$REPORT_DIR"/"$COV_FILE"
+LINT_PATH="$REPORT_DIR/$LINT_FILE"
+#FLAKE8_PATH="$REPORT_DIR/flake8_html/index.html"
+COV_PATH="$REPORT_DIR/$COV_FILE"
 OS=`uname`
 NO_LINES_MSG='No lines with'
 NO_LINT_VIOLATIONS_MSG='Violations: 0 lines'
@@ -102,13 +103,14 @@ no_issues_found=true
 clean_run=false
 declare -A browser_commands=( ["Linux"]=google-chrome ["Darwin"]=open )
 declare -A report_files=( ["lint"]=${LINT_PATH} ["coverage"]=${COV_PATH} )
+#declare -A report_files=( ["lint"]=${FLAKE8_PATH} ["coverage"]=${COV_PATH} )
 
 
 function display_results() {
     # Launch a browser tab for each report with errors.
     for key in ${!diffs[@]}; do
         if [[ ${diffs[$key]} != *${NO_LINES_MSG}* && ${diffs[$key]} != *${NO_LINT_VIOLATIONS_MSG}* \
-            && ${diffs[$key]} != *${NO_MISSING_COVERAGE_MSG}* ]]; then
+            && ${diffs[$key]} != *${NO_MISSING_COVERAGE_MSG}* && ${diffs[$key]} != '' ]]; then
             no_issues_found=false
             $(${browser_commands[$OS]} ${report_files[$key]})
         fi
@@ -200,6 +202,8 @@ elif [[ (! -f coverage.xml  || ${#diff} > 0  || "$force_test" == true) ]]; then
 fi
 
 echo "Running diff lint check..."
+#changed_files=$(git diff ${COMPARE_BRANCH} --name-only | grep -E '\.py$')
+#lint_diff=$(flake8 ${changed_files} --format=html --htmldir=${REPORT_DIR}/flake8_html)
 lint_diff=$(diff-quality --violations=flake8 --compare-branch="$COMPARE_BRANCH" --html-report "$LINT_PATH")
 echo "${lint_diff}"
 
