@@ -163,7 +163,7 @@ fi
 if [[ "$last_commit" == true ]]; then
     diff_cmd=(git diff)
 else
-    diff_cmd=(git diff ${COMPARE_BRANCH}...HEAD)
+    diff_cmd=(git diff ${COMPARE_BRANCH})
 fi
 
 # Find if there is a diff on current branch.
