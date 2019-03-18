@@ -2,12 +2,11 @@ from unittest import mock
 
 from src.domain_models.common import BaseModel
 from src.domain_models.feeder import Feeder
-from src.typing_definitions.custom_types import TypeId
 
 
 class TestBaseModel:
     def test_init(self):
-        base_model = BaseModel(id_=TypeId('base_id'))
+        base_model = BaseModel(id_='base_id')
         assert base_model.id == 'base_id'
 
     @mock.patch('uuid.uuid4')
