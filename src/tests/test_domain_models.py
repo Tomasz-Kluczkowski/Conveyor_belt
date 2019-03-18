@@ -1,6 +1,9 @@
+import pytest
+
 from unittest import mock
 
 from src.domain_models.common import BaseModel
+from src.domain_models.exceptions import InvalidItemOperation
 from src.domain_models.feeder import Feeder
 
 
@@ -21,11 +24,6 @@ class TestFeeder:
         assert basic_feeder.id == 'feeder_id'
         assert basic_feeder.components == ['A', 'B']
 
-    def test_repr_method(self, basic_feeder):
-        assert str(basic_feeder) == (
-            f"<Feeder(id=feeder_id, components=['A', 'B'], feed_func=basic_feed_func)>"
-        )
-
     def test_feed(self, basic_feeder):
         assert basic_feeder.feed() == 1
 
@@ -44,11 +42,6 @@ class TestReceiver:
         assert basic_receiver.id == 'receiver_id'
         assert basic_receiver.received_items == []
 
-    def test_repr_method(self, basic_receiver):
-        assert str(basic_receiver) == (
-            f'<Receiver(id=receiver_id, received_items=[])>'
-        )
-
     def test_receive(self, basic_receiver):
         basic_receiver.receive('A')
         assert basic_receiver.received_items == ['A']
@@ -58,10 +51,18 @@ class TestWorker:
     def test_init(self, basic_worker):
         assert basic_worker.id == 'worker_id'
         assert basic_worker.name == 'Tomek'
+        assert basic_worker.required_items == ['A', 'B']
         assert basic_worker.left is None
         assert basic_worker.right is None
 
-    def test_repr_method(self, basic_worker):
-        assert str(basic_worker) == (
-            f"<Worker(id=worker_id, name='Tomek', left=None, right=None)>"
-        )
+    def test_take_items(self, basic_worker):
+        basic_worker.take_item('A')
+        assert basic_worker.left == 'A'
+
+        basic_worker.take_item('B')
+        assert basic_worker.right == 'B'
+
+        with pytest.raises(InvalidItemOperation) as exception:
+            basic_worker.take_item('C')
+
+        assert exception.value.args == ("Unable to pick up item: 'C'.",)

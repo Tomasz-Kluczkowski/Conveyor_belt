@@ -23,3 +23,4 @@ class WorkerFactory(factory.Factory):
         model = Worker
     id_ = 'worker_id'
     name = 'Tomek'
+    required_items = ['A', 'B']
