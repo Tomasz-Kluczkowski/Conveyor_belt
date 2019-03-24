@@ -6,6 +6,7 @@ from src.domain_models.receiver import Receiver
 from src.domain_models.worker import Worker
 from src.domain_models.worker_pair import WorkerPair
 from src.factory_configuration.factory_configuration import REQUIRED_ITEMS, NUM_STEPS
+from src.helpers.data_structures import Queue
 
 
 class ConveyorBelt(BaseModel):
@@ -23,9 +24,9 @@ class ConveyorBelt(BaseModel):
                 'Improperly configured ConveyorBelt - num_pairs cannot exceed num_slots.'
             )
         self.num_pairs = num_pairs or num_slots
-        self.worker_pairs = []
-        self.items_on_belt: List[Any] = []
-        # create WorkerPairs
+        self.worker_pairs: List[WorkerPair] = []
+        self.items_on_belt: Queue = Queue()
+
         self.add_worker_pairs()
 
     def add_worker_pairs(self):
@@ -39,10 +40,10 @@ class ConveyorBelt(BaseModel):
 
     def push_item_to_receiver(self):
         """
-        Moves last item on the belt to the receiver when belt is full.
+        Moves last item on the belt to the receiver when the belt is full.
         """
-        if len(self.items_on_belt) == self.num_slots:
-            item_to_receive = self.items_on_belt.pop(0)
+        if self.items_on_belt.size == self.num_slots:
+            item_to_receive = self.items_on_belt.dequeue()
             self.receiver.receive(item_to_receive)
 
     def run_belt(self):
@@ -53,3 +54,4 @@ class ConveyorBelt(BaseModel):
             # move farthest item on belt to the receiver if line full
             self.push_item_to_receiver()
 
+            # get item from the feeder onto the belt

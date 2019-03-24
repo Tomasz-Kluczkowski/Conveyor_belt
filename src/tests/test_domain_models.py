@@ -98,7 +98,7 @@ class TestConveyorBelt:
         assert len(conveyor_belt.worker_pairs) == 3
         assert conveyor_belt.feeder == basic_feeder
         assert conveyor_belt.receiver == basic_receiver
-        assert conveyor_belt.items_on_belt == []
+        assert conveyor_belt.items_on_belt.size == 0
 
     def test_init_num_pairs(self, basic_feeder, basic_receiver):
         conveyor_belt = ConveyorBelt(
@@ -113,7 +113,7 @@ class TestConveyorBelt:
         assert len(conveyor_belt.worker_pairs) == 1
         assert conveyor_belt.feeder == basic_feeder
         assert conveyor_belt.receiver == basic_receiver
-        assert conveyor_belt.items_on_belt == []
+        assert conveyor_belt.items_on_belt.size == 0
 
     def test_num_pairs_exceeding_num_slots(self, conveyor_belt_factory):
         with pytest.raises(ValueError) as exception:
@@ -125,12 +125,16 @@ class TestConveyorBelt:
 
     def test_push_item_to_receiver(self, conveyor_belt_factory):
         conveyor_belt: ConveyorBelt = conveyor_belt_factory()
-        conveyor_belt.items_on_belt = [1, 2, 3]
+        conveyor_belt.items_on_belt.enqueue(1)
+        conveyor_belt.items_on_belt.enqueue(2)
+        conveyor_belt.items_on_belt.enqueue(3)
         conveyor_belt.push_item_to_receiver()
         assert conveyor_belt.receiver.received_items == [1]
+        assert conveyor_belt.items_on_belt.size == 2
 
     def test_push_item_to_receiver_belt_not_full(self, conveyor_belt_factory):
         conveyor_belt: ConveyorBelt = conveyor_belt_factory()
-        conveyor_belt.items_on_belt = [1, 2]
+        conveyor_belt.items_on_belt.enqueue(1)
+        conveyor_belt.items_on_belt.enqueue(2)
         conveyor_belt.push_item_to_receiver()
         assert conveyor_belt.receiver.received_items == []
