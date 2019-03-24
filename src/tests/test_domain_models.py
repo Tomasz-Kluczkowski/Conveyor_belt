@@ -2,6 +2,8 @@ from unittest import mock
 
 from src.domain_models.common import BaseModel
 from src.domain_models.feeder import Feeder
+from src.domain_models.worker import IDLE
+from src.domain_models.worker_pair import WorkerPair
 
 
 class TestBaseModel:
@@ -50,10 +52,30 @@ class TestWorker:
         assert basic_worker.name == 'Tomek'
         assert basic_worker.required_items == ['A', 'B']
         assert basic_worker.items == []
+        assert basic_worker.state == IDLE
 
-    def test_take_items(self, basic_worker):
+    def test_take_item(self, basic_worker):
         basic_worker.take_item('A')
         assert basic_worker.items == ['A']
 
         basic_worker.take_item('B')
         assert basic_worker.items == ['A', 'B']
+
+    def test_take_item_does_not_add_duplicates(self, basic_worker):
+        basic_worker.take_item('A')
+        basic_worker.take_item('A')
+        assert basic_worker.items == ['A']
+
+    def test_take_item_does_not_take_not_required(self, basic_worker):
+        basic_worker.take_item('Q')
+        assert basic_worker.items == []
+
+
+class TestPair:
+    def test_init(self, worker_factory):
+        worker_1 = worker_factory(id_='Tom')
+        worker_2 = worker_factory(id_='Mac')
+        worker_pair = WorkerPair(workers=[worker_1, worker_2], id_='pair_1')
+
+        assert worker_pair.workers == [worker_1, worker_2]
+        assert worker_pair.id == 'pair_1'

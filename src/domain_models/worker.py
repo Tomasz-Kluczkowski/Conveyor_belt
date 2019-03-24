@@ -14,7 +14,8 @@ class Worker(BaseModel):
         self.required_items = required_items
         self.name = name
         self.items = []
+        self.state = IDLE
 
     def take_item(self, item):
-        if len(self.items) < 2 and item in self.required_items:
+        if len(self.items) < 2 and item not in self.items and item in self.required_items:
             self.items.append(item)
