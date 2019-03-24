@@ -1,9 +1,6 @@
-import pytest
-
 from unittest import mock
 
 from src.domain_models.common import BaseModel
-from src.domain_models.exceptions import InvalidItemOperation
 from src.domain_models.feeder import Feeder
 
 
@@ -52,17 +49,11 @@ class TestWorker:
         assert basic_worker.id == 'worker_id'
         assert basic_worker.name == 'Tomek'
         assert basic_worker.required_items == ['A', 'B']
-        assert basic_worker.left is None
-        assert basic_worker.right is None
+        assert basic_worker.items == []
 
     def test_take_items(self, basic_worker):
         basic_worker.take_item('A')
-        assert basic_worker.left == 'A'
+        assert basic_worker.items == ['A']
 
         basic_worker.take_item('B')
-        assert basic_worker.right == 'B'
-
-        with pytest.raises(InvalidItemOperation) as exception:
-            basic_worker.take_item('C')
-
-        assert exception.value.args == ("Unable to pick up item: 'C'.",)
+        assert basic_worker.items == ['A', 'B']
