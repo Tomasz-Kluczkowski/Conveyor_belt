@@ -1,9 +1,11 @@
+from typing import List, Any
+
 from src.domain_models.common import BaseModel
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
 from src.domain_models.worker import Worker
 from src.domain_models.worker_pair import WorkerPair
-from src.factory_configuration.factory_configuration import REQUIRED_ITEMS
+from src.factory_configuration.factory_configuration import REQUIRED_ITEMS, NUM_STEPS
 
 
 class ConveyorBelt(BaseModel):
@@ -22,21 +24,32 @@ class ConveyorBelt(BaseModel):
             )
         self.num_pairs = num_pairs or num_slots
         self.worker_pairs = []
-        self.items_on_belt = []
+        self.items_on_belt: List[Any] = []
         # create WorkerPairs
         self.add_worker_pairs()
 
     def add_worker_pairs(self):
         """
-        Created a worker pair pair num_slots.
+        Creates a WorkerPair per num_pairs.
         """
         for slot in range(self.num_pairs):
             workers = [Worker(required_items=REQUIRED_ITEMS) for _ in range(2)]
             worker_pair = WorkerPair(workers=workers)
             self.worker_pairs.append(worker_pair)
 
-    # def run_belt(self):
-    #     """
-    #     Main event loop.
-    #     """
-    #
+    def push_item_to_receiver(self):
+        """
+        Moves last item on the belt to the receiver when belt is full.
+        """
+        if len(self.items_on_belt) == self.num_slots:
+            item_to_receive = self.items_on_belt.pop(0)
+            self.receiver.receive(item_to_receive)
+
+    def run_belt(self):
+        """
+        Main event loop.
+        """
+        for step in NUM_STEPS:
+            # move farthest item on belt to the receiver if line full
+            self.push_item_to_receiver()
+

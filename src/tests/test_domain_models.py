@@ -1,7 +1,6 @@
 from unittest import mock
 
 import pytest
-from devtools import debug
 
 from src.domain_models.common import BaseModel
 from src.domain_models.conveyor_belt import ConveyorBelt
@@ -123,3 +122,15 @@ class TestConveyorBelt:
         assert exception.value.args == (
             'Improperly configured ConveyorBelt - num_pairs cannot exceed num_slots.',
         )
+
+    def test_push_item_to_receiver(self, conveyor_belt_factory):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
+        conveyor_belt.items_on_belt = [1, 2, 3]
+        conveyor_belt.push_item_to_receiver()
+        assert conveyor_belt.receiver.received_items == [1]
+
+    def test_push_item_to_receiver_belt_not_full(self, conveyor_belt_factory):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
+        conveyor_belt.items_on_belt = [1, 2]
+        conveyor_belt.push_item_to_receiver()
+        assert conveyor_belt.receiver.received_items == []
