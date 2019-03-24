@@ -1,6 +1,10 @@
 from unittest import mock
 
+import pytest
+from devtools import debug
+
 from src.domain_models.common import BaseModel
+from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.feeder import Feeder
 from src.domain_models.worker import IDLE
 from src.domain_models.worker_pair import WorkerPair
@@ -71,7 +75,7 @@ class TestWorker:
         assert basic_worker.items == []
 
 
-class TestPair:
+class TestWorkerPair:
     def test_init(self, worker_factory):
         worker_1 = worker_factory(id_='Tom')
         worker_2 = worker_factory(id_='Mac')
@@ -79,3 +83,43 @@ class TestPair:
 
         assert worker_pair.workers == [worker_1, worker_2]
         assert worker_pair.id == 'pair_1'
+
+
+class TestConveyorBelt:
+    def test_init_default(self, basic_feeder, basic_receiver):
+        conveyor_belt = ConveyorBelt(
+            feeder=basic_feeder,
+            receiver=basic_receiver,
+            num_slots=3,
+            id_='belt_id'
+        )
+
+        assert conveyor_belt.id == 'belt_id'
+        assert conveyor_belt.num_slots == 3
+        assert len(conveyor_belt.worker_pairs) == 3
+        assert conveyor_belt.feeder == basic_feeder
+        assert conveyor_belt.receiver == basic_receiver
+        assert conveyor_belt.items_on_belt == []
+
+    def test_init_num_pairs(self, basic_feeder, basic_receiver):
+        conveyor_belt = ConveyorBelt(
+            feeder=basic_feeder,
+            receiver=basic_receiver,
+            num_slots=3,
+            num_pairs=1,
+            id_='belt_id'
+        )
+
+        assert conveyor_belt.num_slots == 3
+        assert len(conveyor_belt.worker_pairs) == 1
+        assert conveyor_belt.feeder == basic_feeder
+        assert conveyor_belt.receiver == basic_receiver
+        assert conveyor_belt.items_on_belt == []
+
+    def test_num_pairs_exceeding_num_slots(self, conveyor_belt_factory):
+        with pytest.raises(ValueError) as exception:
+            conveyor_belt_factory(num_pairs=10)
+
+        assert exception.value.args == (
+            'Improperly configured ConveyorBelt - num_pairs cannot exceed num_slots.',
+        )

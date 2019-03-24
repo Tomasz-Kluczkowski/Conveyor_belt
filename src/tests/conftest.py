@@ -1,6 +1,6 @@
 import pytest
 
-from src.tests.factories import FeederFactory, ReceiverFactory, WorkerFactory
+from src.tests.factories import FeederFactory, ReceiverFactory, WorkerFactory, ConveyorBeltFactory
 
 
 def basic_feed_func():
@@ -35,3 +35,8 @@ def worker_factory():
 @pytest.fixture()
 def basic_worker():
     return WorkerFactory()
+
+
+@pytest.fixture()
+def conveyor_belt_factory():
+    return ConveyorBeltFactory
