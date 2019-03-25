@@ -50,6 +50,7 @@ class ConveyorBelt(BaseModel):
         """
         Adds new item to the conveyor belt.
         """
+        # TODO: RAISE OPERATION ERROR IF WE RUN OUT OF INPUT ITEMS BEFORE THE STEPS ARE EXHAUSTED!
         if self.items_on_belt.size < self.num_slots:
             new_belt_item = self.feeder.feed()
             self.items_on_belt.enqueue(new_belt_item)
