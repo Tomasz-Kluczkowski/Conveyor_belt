@@ -1,7 +1,5 @@
 from typing import List
 
-from devtools import debug
-
 from src.domain_models.common import BaseModel
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver

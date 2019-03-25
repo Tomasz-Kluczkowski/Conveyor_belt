@@ -10,7 +10,7 @@ class FeederFactory(factory.Factory):
     class Meta:
         model = Feeder
     id_ = 'feeder_id'
-    components = ['A', 'B']
+    components = ['A', 'B', 'E']
 
 
 class ReceiverFactory(factory.Factory):

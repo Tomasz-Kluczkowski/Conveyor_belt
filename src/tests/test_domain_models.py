@@ -1,7 +1,6 @@
-from unittest import mock
-from unittest.mock import patch
-
 import pytest
+
+from unittest import mock
 
 from src.domain_models.common import BaseModel
 from src.domain_models.conveyor_belt import ConveyorBelt
@@ -25,10 +24,21 @@ class TestBaseModel:
 class TestFeeder:
     def test_init(self, basic_feeder):
         assert basic_feeder.id == 'feeder_id'
-        assert basic_feeder.components == ['A', 'B']
+        assert basic_feeder.components == ['A', 'B', 'E']
 
-    def test_feed(self, basic_feeder):
+    def test_feed_simple(self, basic_feeder):
         assert basic_feeder.feed() == 1
+
+    def test_feed(self, feeder_factory):
+        feeder = feeder_factory(feed_input=[1, 2, 3])
+        assert feeder.feed() == 1
+        assert feeder.feed() == 2
+        assert feeder.feed() == 3
+
+    def test_feed_not_iterable(self, feeder_factory):
+
+        with pytest.raises(TypeError):
+            feeder_factory(feed_input=True)
 
     @mock.patch('src.domain_models.feeder.random')
     def test_default_feed(self, mock_random):
@@ -141,9 +151,7 @@ class TestConveyorBelt:
         assert conveyor_belt.receiver.received_items == []
 
     def test_add_new_item_to_belt(self, conveyor_belt_factory, feeder_factory):
-        def feed_func():
-            return 1
-        feeder = feeder_factory(feed_func=feed_func)
+        feeder = feeder_factory(feed_input=[1])
         conveyor_belt: ConveyorBelt = conveyor_belt_factory(feeder=feeder)
         conveyor_belt.add_new_item_to_belt()
         assert conveyor_belt.items_on_belt.size == 1
