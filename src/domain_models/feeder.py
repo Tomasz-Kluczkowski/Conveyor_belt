@@ -4,6 +4,14 @@ from typing import List, Callable
 from src.domain_models.common import BaseModel
 
 
+def infinite_random_choice():
+    choices = [1, 2, 3]
+    cho = random.choice(choices)
+    while True:
+        yield cho
+
+
+
 class Feeder(BaseModel):
     """
     Use to provide feed for the conveyor belt. If no feed function specified will select random item from components
@@ -19,3 +27,5 @@ class Feeder(BaseModel):
 
     def feed(self):
         return self.__feed_func()
+
+

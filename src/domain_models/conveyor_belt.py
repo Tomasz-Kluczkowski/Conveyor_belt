@@ -1,4 +1,6 @@
-from typing import List, Any
+from typing import List
+
+from devtools import debug
 
 from src.domain_models.common import BaseModel
 from src.domain_models.feeder import Feeder
@@ -46,6 +48,14 @@ class ConveyorBelt(BaseModel):
             item_to_receive = self.items_on_belt.dequeue()
             self.receiver.receive(item_to_receive)
 
+    def add_new_item_to_belt(self):
+        """
+        Adds new item to the conveyor belt.
+        """
+        if self.items_on_belt.size < self.num_slots:
+            new_belt_item = self.feeder.feed()
+            self.items_on_belt.enqueue(new_belt_item)
+
     def run_belt(self):
         """
         Main event loop.
@@ -55,3 +65,4 @@ class ConveyorBelt(BaseModel):
             self.push_item_to_receiver()
 
             # get item from the feeder onto the belt
+            self.add_new_item_to_belt()

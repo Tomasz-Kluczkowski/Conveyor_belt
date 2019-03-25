@@ -1,4 +1,5 @@
 from unittest import mock
+from unittest.mock import patch
 
 import pytest
 
@@ -138,3 +139,13 @@ class TestConveyorBelt:
         conveyor_belt.items_on_belt.enqueue(2)
         conveyor_belt.push_item_to_receiver()
         assert conveyor_belt.receiver.received_items == []
+
+    def test_add_new_item_to_belt(self, conveyor_belt_factory, feeder_factory):
+        def feed_func():
+            return 1
+        feeder = feeder_factory(feed_func=feed_func)
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(feeder=feeder)
+        conveyor_belt.add_new_item_to_belt()
+        assert conveyor_belt.items_on_belt.size == 1
+        assert conveyor_belt.items_on_belt.dequeue() == 1
+
