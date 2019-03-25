@@ -26,11 +26,17 @@ class TestFeeder:
         assert basic_feeder.id == 'feeder_id'
         assert basic_feeder.components == ['A', 'B', 'E']
 
-    def test_feed_simple(self, basic_feeder):
+    def test_feed_single_element_list(self, basic_feeder):
         assert basic_feeder.feed() == 1
 
-    def test_feed(self, feeder_factory):
+    def test_feed_multiple_element_list(self, feeder_factory):
         feeder = feeder_factory(feed_input=[1, 2, 3])
+        assert feeder.feed() == 1
+        assert feeder.feed() == 2
+        assert feeder.feed() == 3
+
+    def test_feed_with_generator(self, feeder_factory):
+        feeder = feeder_factory(feed_input=(item for item in [1, 2, 3]))
         assert feeder.feed() == 1
         assert feeder.feed() == 2
         assert feeder.feed() == 3
@@ -156,4 +162,3 @@ class TestConveyorBelt:
         conveyor_belt.add_new_item_to_belt()
         assert conveyor_belt.items_on_belt.size == 1
         assert conveyor_belt.items_on_belt.dequeue() == 1
-

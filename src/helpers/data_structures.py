@@ -16,4 +16,3 @@ class Queue:
     @property
     def size(self):
         return len(self.items)
-
