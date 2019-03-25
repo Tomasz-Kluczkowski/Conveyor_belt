@@ -162,3 +162,9 @@ class TestConveyorBelt:
         conveyor_belt.add_new_item_to_belt()
         assert conveyor_belt.items_on_belt.size == 1
         assert conveyor_belt.items_on_belt.dequeue() == 1
+
+    def test_basic_run_belt(self, conveyor_belt_factory, feeder_factory):
+        feeder = feeder_factory(feed_input=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(feeder=feeder)
+        conveyor_belt.run_belt()
+        assert conveyor_belt.receiver.received_items == [1, 2, 3, 4, 5, 6, 7]

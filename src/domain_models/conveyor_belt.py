@@ -5,7 +5,7 @@ from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
 from src.domain_models.worker import Worker
 from src.domain_models.worker_pair import WorkerPair
-from src.factory_configuration.factory_configuration import REQUIRED_ITEMS, NUM_STEPS
+from src.conveyor_belt_configuration.conveyor_belt_configuration import BasicConveyorBeltConfig
 from src.helpers.data_structures import Queue
 
 
@@ -34,7 +34,7 @@ class ConveyorBelt(BaseModel):
         Creates a WorkerPair per num_pairs.
         """
         for slot in range(self.num_pairs):
-            workers = [Worker(required_items=REQUIRED_ITEMS) for _ in range(2)]
+            workers = [Worker(required_items=BasicConveyorBeltConfig.REQUIRED_ITEMS) for _ in range(2)]
             worker_pair = WorkerPair(workers=workers)
             self.worker_pairs.append(worker_pair)
 
@@ -58,7 +58,7 @@ class ConveyorBelt(BaseModel):
         """
         Main event loop.
         """
-        for step in NUM_STEPS:
+        for step in range(BasicConveyorBeltConfig.NUM_STEPS):
             # move farthest item on belt to the receiver if line full
             self.push_item_to_receiver()
 
