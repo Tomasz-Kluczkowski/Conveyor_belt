@@ -9,7 +9,7 @@ from src.conveyor_belt_configuration.conveyor_belt_configuration import BasicCon
 from src.helpers.data_structures import Queue
 
 
-class ConveyorBelt(BaseModel):
+class FactoryFloor(BaseModel):
     """
     This is the controller of the entire operation. It will navigate the production line.
     By default the number of pairs matches the number of slots on the belt.

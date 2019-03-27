@@ -3,7 +3,7 @@ import pytest
 from unittest import mock
 
 from src.domain_models.common import BaseModel
-from src.domain_models.conveyor_belt import ConveyorBelt
+from src.domain_models.factory_floor import FactoryFloor
 from src.domain_models.feeder import Feeder
 from src.domain_models.worker import IDLE
 from src.domain_models.worker_pair import WorkerPair
@@ -103,7 +103,7 @@ class TestWorkerPair:
 
 class TestConveyorBelt:
     def test_init_default(self, basic_feeder, basic_receiver):
-        conveyor_belt = ConveyorBelt(
+        conveyor_belt = FactoryFloor(
             feeder=basic_feeder,
             receiver=basic_receiver,
             num_slots=3,
@@ -118,7 +118,7 @@ class TestConveyorBelt:
         assert conveyor_belt.items_on_belt.size == 0
 
     def test_init_num_pairs(self, basic_feeder, basic_receiver):
-        conveyor_belt = ConveyorBelt(
+        conveyor_belt = FactoryFloor(
             feeder=basic_feeder,
             receiver=basic_receiver,
             num_slots=3,
@@ -141,7 +141,7 @@ class TestConveyorBelt:
         )
 
     def test_push_item_to_receiver(self, conveyor_belt_factory):
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
+        conveyor_belt: FactoryFloor = conveyor_belt_factory()
         conveyor_belt.items_on_belt.enqueue(1)
         conveyor_belt.items_on_belt.enqueue(2)
         conveyor_belt.items_on_belt.enqueue(3)
@@ -150,7 +150,7 @@ class TestConveyorBelt:
         assert conveyor_belt.items_on_belt.size == 2
 
     def test_push_item_to_receiver_belt_not_full(self, conveyor_belt_factory):
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
+        conveyor_belt: FactoryFloor = conveyor_belt_factory()
         conveyor_belt.items_on_belt.enqueue(1)
         conveyor_belt.items_on_belt.enqueue(2)
         conveyor_belt.push_item_to_receiver()
@@ -158,13 +158,13 @@ class TestConveyorBelt:
 
     def test_add_new_item_to_belt(self, conveyor_belt_factory, feeder_factory):
         feeder = feeder_factory(feed_input=[1])
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory(feeder=feeder)
+        conveyor_belt: FactoryFloor = conveyor_belt_factory(feeder=feeder)
         conveyor_belt.add_new_item_to_belt()
         assert conveyor_belt.items_on_belt.size == 1
         assert conveyor_belt.items_on_belt.dequeue() == 1
 
     def test_basic_run_belt(self, conveyor_belt_factory, feeder_factory):
         feeder = feeder_factory(feed_input=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory(feeder=feeder)
+        conveyor_belt: FactoryFloor = conveyor_belt_factory(feeder=feeder)
         conveyor_belt.run_belt()
         assert conveyor_belt.receiver.received_items == [1, 2, 3, 4, 5, 6, 7]
