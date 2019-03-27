@@ -43,8 +43,15 @@ class TestFeeder:
 
     def test_feed_not_iterable(self, feeder_factory):
 
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError) as exception:
             feeder_factory(feed_input=True)
+
+        assert exception.value.args == (
+            (
+                'Unable to iterate over supplied feed_input of type: bool. Please make sure feed_input is an Iterable '
+                'or a Sequence.'
+            ),
+        )
 
     @mock.patch('src.domain_models.feeder.random')
     def test_default_feed(self, mock_random):
@@ -137,7 +144,7 @@ class TestConveyorBelt:
             conveyor_belt_factory(num_pairs=10)
 
         assert exception.value.args == (
-            'Improperly configured ConveyorBelt - num_pairs cannot exceed num_slots.',
+            'Improperly configured FactoryFloor - num_pairs cannot exceed num_slots.',
         )
 
     def test_push_item_to_receiver(self, conveyor_belt_factory):

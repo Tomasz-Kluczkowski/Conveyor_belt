@@ -6,6 +6,7 @@ from src.domain_models.receiver import Receiver
 from src.domain_models.worker import Worker
 from src.domain_models.worker_pair import WorkerPair
 from src.conveyor_belt_configuration.conveyor_belt_configuration import BasicConveyorBeltConfig
+from src.exceptions.messages import WRONG_FACTORY_CONFIG
 from src.helpers.data_structures import Queue
 
 
@@ -20,9 +21,7 @@ class FactoryFloor(BaseModel):
         self.receiver = receiver
         self.num_slots = num_slots
         if num_pairs and num_pairs > num_slots:
-            raise ValueError(
-                'Improperly configured ConveyorBelt - num_pairs cannot exceed num_slots.'
-            )
+            raise ValueError(WRONG_FACTORY_CONFIG)
         self.num_pairs = num_pairs or num_slots
         self.worker_pairs: List[WorkerPair] = []
         self.items_on_belt: Queue = Queue()
