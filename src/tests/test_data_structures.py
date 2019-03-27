@@ -10,7 +10,7 @@ class TestQueue:
         queue = Queue()
         queue.enqueue(1)
         queue.enqueue(2)
-        assert queue.items == [1, 2]
+        assert queue.items == [2, 1]
 
     def test_dequeue(self):
         queue = Queue()
@@ -18,7 +18,7 @@ class TestQueue:
         queue.enqueue(2)
         queue.enqueue(3)
         assert queue.dequeue() == 1
-        assert queue.items == [2, 3]
+        assert queue.items == [3, 2]
 
     def test_is_empty(self):
         queue = Queue()
