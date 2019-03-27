@@ -6,7 +6,8 @@ from src.domain_models.receiver import Receiver
 from src.domain_models.worker import Worker
 from src.domain_models.worker_pair import WorkerPair
 from src.conveyor_belt_configuration.conveyor_belt_configuration import BasicConveyorBeltConfig
-from src.exceptions.messages import WRONG_FACTORY_CONFIG
+from src.exceptions.exceptions import FactoryConfigError
+from src.exceptions.messages import WRONG_FACTORY_CONFIG, INSUFFICIENT_FEED_INPUT
 from src.helpers.data_structures import Queue
 
 
@@ -21,7 +22,7 @@ class FactoryFloor(BaseModel):
         self.receiver = receiver
         self.num_slots = num_slots
         if num_pairs and num_pairs > num_slots:
-            raise ValueError(WRONG_FACTORY_CONFIG)
+            raise FactoryConfigError(WRONG_FACTORY_CONFIG)
         self.num_pairs = num_pairs or num_slots
         self.worker_pairs: List[WorkerPair] = []
         self.items_on_belt: Queue = Queue()
@@ -49,7 +50,6 @@ class FactoryFloor(BaseModel):
         """
         Adds new item to the conveyor belt.
         """
-        # TODO: RAISE OPERATION ERROR IF WE RUN OUT OF INPUT ITEMS BEFORE THE STEPS ARE EXHAUSTED!
         if self.items_on_belt.size < self.num_slots:
             new_belt_item = self.feeder.feed()
             self.items_on_belt.enqueue(new_belt_item)
@@ -63,4 +63,7 @@ class FactoryFloor(BaseModel):
             self.push_item_to_receiver()
 
             # get item from the feeder onto the belt
-            self.add_new_item_to_belt()
+            try:
+                self.add_new_item_to_belt()
+            except StopIteration:
+                raise FactoryConfigError(INSUFFICIENT_FEED_INPUT)

@@ -27,7 +27,7 @@ class WorkerFactory(factory.Factory):
     required_items = ['A', 'B']
 
 
-class ConveyorBeltFactory(factory.Factory):
+class FactoryFloorFactory(factory.Factory):
     class Meta:
         model = FactoryFloor
 
