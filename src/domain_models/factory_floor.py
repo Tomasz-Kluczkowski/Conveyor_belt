@@ -25,6 +25,8 @@ class FactoryFloor(BaseModel):
             raise FactoryConfigError(WRONG_FACTORY_CONFIG)
         self.num_pairs = num_pairs or num_slots
         self.worker_pairs: List[WorkerPair] = []
+        # TODO: change to conveyor_belt = ConveyorBelt(), this inherits from Queue, add peek method to check items at
+        # indexes.
         self.items_on_belt: Queue = Queue()
 
         self.add_worker_pairs()
