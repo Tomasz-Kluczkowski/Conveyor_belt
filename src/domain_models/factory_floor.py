@@ -35,16 +35,17 @@ class FactoryFloor(BaseModel):
         self.feeder = feeder if feeder else Feeder()
         self.conveyor_belt = conveyor_belt if conveyor_belt else ConveyorBelt()
         self.config = config if config else FactoryFloorConfig
+        self.time = 0
 
         self.add_worker_pairs()
 
     def add_worker_pairs(self):
         """
-        Creates a WorkerPair per num_pairs.
+        Creates a WorkerPair per num_pairs. Each worker pair is assigned to a slot on the conveyor belt.
         """
         for slot in range(self.num_pairs):
-            workers = [Worker(required_items=FactoryFloorConfig.REQUIRED_ITEMS) for _ in range(2)]
-            worker_pair = WorkerPair(workers=workers)
+            workers = [Worker(required_items=self.config.REQUIRED_ITEMS) for slot in range(2)]
+            worker_pair = WorkerPair(workers=workers, slot=slot)
             self.worker_pairs.append(worker_pair)
 
     def push_item_to_receiver(self):
@@ -76,3 +77,12 @@ class FactoryFloor(BaseModel):
                 self.add_new_item_to_belt()
             except StopIteration:
                 raise FactoryConfigError(INSUFFICIENT_FEED_INPUT)
+
+            # make each pair work
+            for worker_pair in self.worker_pairs:
+            #     now find who in the pair can actually work (so check the status)
+                for worker in worker_pair.workers:
+                    pass
+            #      if worker is idle, pick up stuff
+            # finally always increase time at the end of each tick
+            self.time += 1
