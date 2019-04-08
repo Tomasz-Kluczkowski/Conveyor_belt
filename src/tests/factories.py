@@ -1,5 +1,6 @@
 import factory
 
+from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.factory_floor import FactoryFloor
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
@@ -19,12 +20,19 @@ class ReceiverFactory(factory.Factory):
     id_ = 'receiver_id'
 
 
+class ConveyorBeltFactory(factory.Factory):
+    class Meta:
+        model = ConveyorBelt
+
+
 class WorkerFactory(factory.Factory):
     class Meta:
         model = Worker
     id_ = 'worker_id'
     name = 'Tomek'
     required_items = ['A', 'B']
+    slot = 1
+    conveyor_belt = factory.SubFactory(ConveyorBeltFactory)
 
 
 class FactoryFloorFactory(factory.Factory):

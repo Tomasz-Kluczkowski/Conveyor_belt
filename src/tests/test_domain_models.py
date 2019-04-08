@@ -5,7 +5,7 @@ from unittest import mock
 from src.domain_models.common import BaseModel
 from src.domain_models.factory_floor import FactoryFloor
 from src.domain_models.feeder import Feeder
-from src.domain_models.worker import IDLE
+from src.domain_models.worker import WorkerState
 from src.domain_models.worker_pair import WorkerPair
 from src.exceptions.exceptions import FactoryConfigError, FeederConfigError
 
@@ -80,7 +80,7 @@ class TestWorker:
         assert basic_worker.name == 'Tomek'
         assert basic_worker.required_items == ['A', 'B']
         assert basic_worker.items == []
-        assert basic_worker.state == IDLE
+        assert basic_worker.state == WorkerState.IDLE
 
     def test_take_item(self, basic_worker):
         basic_worker.take_item('A')

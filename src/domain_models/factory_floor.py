@@ -4,7 +4,7 @@ from src.domain_models.common import BaseModel
 from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
-from src.domain_models.worker import Worker
+from src.domain_models.worker import Worker, WorkerState
 from src.domain_models.worker_pair import WorkerPair
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 from src.exceptions.exceptions import FactoryConfigError
@@ -44,7 +44,11 @@ class FactoryFloor(BaseModel):
         Creates a WorkerPair per num_pairs. Each worker pair is assigned to a slot on the conveyor belt.
         """
         for slot in range(self.num_pairs):
-            workers = [Worker(required_items=self.config.REQUIRED_ITEMS) for slot in range(2)]
+            workers = [
+                Worker(
+                    conveyor_belt=self.conveyor_belt, required_items=self.config.REQUIRED_ITEMS, slot=slot
+                ) for slot in range(2)
+            ]
             worker_pair = WorkerPair(workers=workers, slot=slot)
             self.worker_pairs.append(worker_pair)
 
@@ -80,9 +84,11 @@ class FactoryFloor(BaseModel):
 
             # make each pair work
             for worker_pair in self.worker_pairs:
+                item_on_belt = self.conveyor_belt.check_at_slot(worker_pair.slot)
             #     now find who in the pair can actually work (so check the status)
                 for worker in worker_pair.workers:
-                    pass
+                    worker.work()
+
             #      if worker is idle, pick up stuff
             # finally always increase time at the end of each tick
             self.time += 1
