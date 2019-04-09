@@ -4,6 +4,11 @@ from src.factory_floor_configuration.factory_floor_configuration import FactoryF
 from src.helpers.data_structures import Queue
 
 
+class ConveyorBeltState:
+    FREE = 'free'
+    BUSY = 'busy'
+
+
 class ConveyorBelt(Queue):
     def check_at_slot(self, slot_number: int) -> Any:
         """
@@ -22,3 +27,7 @@ class ConveyorBelt(Queue):
             return self.items[slot_number]
         except IndexError:
             return FactoryFloorConfig.EMPTY
+
+    def set_slot_state(self):
+        # TODO: set slot state when worker operates on it - when pick_up/drop is used.
+        pass
