@@ -104,10 +104,10 @@ class TestWorker:
 
 
 class TestWorkerPair:
-    def test_init(self, worker_factory):
+    def test_init(self, worker_factory, basic_conveyor_belt):
         worker_1 = worker_factory(id_='Tom')
         worker_2 = worker_factory(id_='Mac')
-        worker_pair = WorkerPair(workers=[worker_1, worker_2], id_='pair_1', slot=1)
+        worker_pair = WorkerPair(workers=[worker_1, worker_2], id_='pair_1', slot=1, conveyor_belt=basic_conveyor_belt)
 
         assert worker_pair.workers == [worker_1, worker_2]
         assert worker_pair.id == 'pair_1'

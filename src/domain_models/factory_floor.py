@@ -4,7 +4,7 @@ from src.domain_models.common import BaseModel
 from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
-from src.domain_models.worker import Worker, WorkerState
+from src.domain_models.worker import Worker
 from src.domain_models.worker_pair import WorkerPair
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 from src.exceptions.exceptions import FactoryConfigError
@@ -52,7 +52,7 @@ class FactoryFloor(BaseModel):
                     slot=slot
                 ) for _ in range(2)
             ]
-            worker_pair = WorkerPair(workers=workers, slot=slot)
+            worker_pair = WorkerPair(workers=workers, slot=slot, conveyor_belt=self.conveyor_belt)
             worker_pairs.append(worker_pair)
         return worker_pairs
 

@@ -41,3 +41,8 @@ def factory_floor_factory():
 @pytest.fixture()
 def conveyor_belt_factory():
     return ConveyorBeltFactory
+
+
+@pytest.fixture()
+def basic_conveyor_belt():
+    return ConveyorBeltFactory()
