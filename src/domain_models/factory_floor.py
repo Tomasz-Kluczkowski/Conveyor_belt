@@ -24,33 +24,37 @@ class FactoryFloor(BaseModel):
                  conveyor_belt: Queue = None,
                  num_pairs: int = None,
                  config: FactoryFloorConfig = None,
+                 worker_pairs: List[WorkerPair] = None,
                  id_: str = None):
         super().__init__(id_)
         if num_pairs and num_pairs > num_slots:
             raise FactoryConfigError(WRONG_FACTORY_CONFIG)
         self.num_slots = num_slots
         self.num_pairs = num_pairs or num_slots
-        self.worker_pairs: List[WorkerPair] = []
         self.receiver = receiver if receiver else Receiver()
         self.feeder = feeder if feeder else Feeder()
         self.conveyor_belt = conveyor_belt if conveyor_belt else ConveyorBelt()
         self.config = config if config else FactoryFloorConfig
         self.time = 0
-
-        self.add_worker_pairs()
+        self.worker_pairs = worker_pairs if worker_pairs else self.add_worker_pairs()
 
     def add_worker_pairs(self):
         """
         Creates a WorkerPair per num_pairs. Each worker pair is assigned to a slot on the conveyor belt.
         """
+        worker_pairs = []
         for slot in range(self.num_pairs):
             workers = [
                 Worker(
-                    conveyor_belt=self.conveyor_belt, required_items=self.config.REQUIRED_ITEMS, slot=slot
+                    conveyor_belt=self.conveyor_belt,
+                    required_items=self.config.REQUIRED_ITEMS,
+                    slot=slot,
+                    time_to_build=self.config.TIME_TO_BUILD
                 ) for slot in range(2)
             ]
             worker_pair = WorkerPair(workers=workers, slot=slot)
-            self.worker_pairs.append(worker_pair)
+            worker_pairs.append(worker_pair)
+        return worker_pairs
 
     def push_item_to_receiver(self):
         """
@@ -84,7 +88,6 @@ class FactoryFloor(BaseModel):
 
             # make each pair work
             for worker_pair in self.worker_pairs:
-                item_on_belt = self.conveyor_belt.check_at_slot(worker_pair.slot)
             #     now find who in the pair can actually work (so check the status)
                 for worker in worker_pair.workers:
                     worker.work()

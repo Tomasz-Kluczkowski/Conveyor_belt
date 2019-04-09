@@ -8,6 +8,7 @@ from src.domain_models.feeder import Feeder
 from src.domain_models.worker import WorkerState
 from src.domain_models.worker_pair import WorkerPair
 from src.exceptions.exceptions import FactoryConfigError, FeederConfigError
+from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 
 
 class TestBaseModel:
@@ -81,6 +82,9 @@ class TestWorker:
         assert basic_worker.required_items == ['A', 'B']
         assert basic_worker.items == []
         assert basic_worker.state == WorkerState.IDLE
+        assert basic_worker.slot == 1
+        assert basic_worker.time_to_build == 4
+        assert basic_worker.time_building == 0
 
     def test_take_item(self, basic_worker):
         basic_worker.take_item('A')
@@ -121,6 +125,7 @@ class TestFactoryFloor:
 
         assert factory_floor.id == 'factory_id'
         assert factory_floor.num_slots == 3
+        assert factory_floor.num_pairs == 3
         assert len(factory_floor.worker_pairs) == 3
         assert factory_floor.feeder == basic_feeder
         assert factory_floor.receiver == basic_receiver
@@ -196,3 +201,14 @@ class TestFactoryFloor:
         assert exception.value.args == (
             'Insufficient amount of items available in the feed_input of the Feeder. Please check your configuration.',
         )
+
+
+class TestConveyorBelt:
+    def test_check_at_slot_with_item_present(self, conveyor_belt_factory):
+        conveyor_belt = conveyor_belt_factory()
+        conveyor_belt.enqueue(1)
+        assert conveyor_belt.check_at_slot(0) == 1
+
+    def test_check_at_slot_with_item_not_present(self, conveyor_belt_factory):
+        conveyor_belt = conveyor_belt_factory()
+        assert conveyor_belt.check_at_slot(0) == FactoryFloorConfig.EMPTY

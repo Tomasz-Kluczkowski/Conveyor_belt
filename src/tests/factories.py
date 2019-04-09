@@ -33,6 +33,7 @@ class WorkerFactory(factory.Factory):
     required_items = ['A', 'B']
     slot = 1
     conveyor_belt = factory.SubFactory(ConveyorBeltFactory)
+    time_to_build = 4
 
 
 class FactoryFloorFactory(factory.Factory):

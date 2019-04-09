@@ -5,7 +5,7 @@ from src.domain_models.worker import Worker
 
 
 class WorkerPair(BaseModel):
-    def __init__(self, slot: int, workers: List[Worker], id_: str = None):
+    def __init__(self, slot: int, workers: List[Worker] = None, id_: str = None):
         """
 
         Parameters
@@ -18,5 +18,5 @@ class WorkerPair(BaseModel):
             Identifier of the pair.
         """
         super().__init__(id_)
-        self.workers = workers
+        self.workers = workers if workers else []
         self.slot = slot
