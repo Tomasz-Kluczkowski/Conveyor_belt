@@ -40,12 +40,15 @@ class Worker(BaseModel):
     def take_item(self, item):
         if self.is_item_pickable(item):
             self.state = WorkerState.PICKING_UP
+            # TODO: before we can pickup here we need to make sure slot is not busy and that we use conveyor belt
+            #  method for pickup/drop - this is wrong as just appends item, but does not remove it from the conveyor belt!!!
             self.items.append(item)
 
     def work(self):
         if self.state == WorkerState.READY_FOR_BUILDING:
             pass
         elif self.state == WorkerState.IDLE:
+            # TODO: this must be a peek type check
             item_on_belt = self.conveyor_belt.check_at_slot(self.slot)
             self.take_item(item_on_belt)
 
