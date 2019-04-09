@@ -48,9 +48,9 @@ class FactoryFloor(BaseModel):
                 Worker(
                     conveyor_belt=self.conveyor_belt,
                     required_items=self.config.REQUIRED_ITEMS,
-                    slot=slot,
-                    time_to_build=self.config.TIME_TO_BUILD
-                ) for slot in range(2)
+                    time_to_build=self.config.TIME_TO_BUILD,
+                    slot=slot
+                ) for _ in range(2)
             ]
             worker_pair = WorkerPair(workers=workers, slot=slot)
             worker_pairs.append(worker_pair)
