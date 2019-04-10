@@ -10,6 +10,10 @@ class ConveyorBeltState:
 
 
 class ConveyorBelt(Queue):
+    def __init__(self, num_slots: int):
+        super(). __init__()
+        self.num_slots = num_slots
+
     def check_at_slot(self, slot_number: int) -> Any:
         """
         Checks for item at a conveyor belt slot. If queue is too short we return empty just as you would examining a

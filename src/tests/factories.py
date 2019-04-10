@@ -23,6 +23,7 @@ class ReceiverFactory(factory.Factory):
 class ConveyorBeltFactory(factory.Factory):
     class Meta:
         model = ConveyorBelt
+    num_slots = 3
 
 
 class WorkerFactory(factory.Factory):
@@ -43,5 +44,5 @@ class FactoryFloorFactory(factory.Factory):
     id_ = 'conveyor_belt_id'
     feeder = factory.SubFactory(FeederFactory)
     receiver = factory.SubFactory(ReceiverFactory)
-    num_slots = 3
+    conveyor_belt = factory.SubFactory(ConveyorBeltFactory)
     num_pairs = 3

@@ -6,7 +6,7 @@ from src.domain_models.common import BaseModel
 from src.domain_models.factory_floor import FactoryFloor
 from src.domain_models.feeder import Feeder
 from src.domain_models.worker import WorkerState
-from src.domain_models.worker_pair import WorkerPair
+# from src.domain_models.worker_pair import WorkerPair
 from src.exceptions.exceptions import FactoryConfigError, FeederConfigError
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 
@@ -103,15 +103,15 @@ class TestWorker:
         assert basic_worker.items == []
 
 
-class TestWorkerPair:
-    def test_init(self, worker_factory, basic_conveyor_belt):
-        worker_1 = worker_factory(id_='Tom')
-        worker_2 = worker_factory(id_='Mac')
-        worker_pair = WorkerPair(workers=[worker_1, worker_2], id_='pair_1', slot=1, conveyor_belt=basic_conveyor_belt)
-
-        assert worker_pair.workers == [worker_1, worker_2]
-        assert worker_pair.id == 'pair_1'
-        assert worker_pair.slot == 1
+# class TestWorkerPair:
+#     def test_init(self, worker_factory, basic_conveyor_belt):
+#         worker_1 = worker_factory(id_='Tom')
+#         worker_2 = worker_factory(id_='Mac')
+#         worker_pair = WorkerPair(workers=[worker_1, worker_2], id_='pair_1', slot=1, conveyor_belt=basic_conveyor_belt)
+#
+#         assert worker_pair.workers == [worker_1, worker_2]
+#         assert worker_pair.id == 'pair_1'
+#         assert worker_pair.slot == 1
 
 
 class TestFactoryFloor:
@@ -119,14 +119,12 @@ class TestFactoryFloor:
         factory_floor = FactoryFloor(
             feeder=basic_feeder,
             receiver=basic_receiver,
-            num_slots=3,
             id_='factory_id'
         )
 
         assert factory_floor.id == 'factory_id'
-        assert factory_floor.num_slots == 3
         assert factory_floor.num_pairs == 3
-        assert len(factory_floor.worker_pairs) == 3
+        # assert len(factory_floor.worker_pairs) == 3
         assert factory_floor.feeder == basic_feeder
         assert factory_floor.receiver == basic_receiver
         assert factory_floor.conveyor_belt.size == 0
@@ -135,13 +133,11 @@ class TestFactoryFloor:
         factory_floor = FactoryFloor(
             feeder=basic_feeder,
             receiver=basic_receiver,
-            num_slots=3,
             num_pairs=1,
             id_='factory_id'
         )
 
-        assert factory_floor.num_slots == 3
-        assert len(factory_floor.worker_pairs) == 1
+        # assert len(factory_floor.worker_pairs) == 1
         assert factory_floor.feeder == basic_feeder
         assert factory_floor.receiver == basic_receiver
         assert factory_floor.conveyor_belt.size == 0
@@ -179,7 +175,7 @@ class TestFactoryFloor:
 
     def test_add_new_item_to_belt_no_space_on_belt(self, factory_floor_factory, feeder_factory):
         feeder = feeder_factory(feed_input=[1])
-        factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder, num_slots=1, num_pairs=1)
+        factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder, num_pairs=1, conveyor_belt__num_slots=1)
         factory_floor.add_new_item_to_belt()
         factory_floor.add_new_item_to_belt()
         assert factory_floor.conveyor_belt.size == 1

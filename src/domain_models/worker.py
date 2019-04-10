@@ -34,11 +34,11 @@ class Worker(BaseModel):
     def is_ready_for_building(self):
         return len(self.items) == len(self.required_items)
 
-    def is_item_pickable(self, item):
+    def is_item_required(self, item):
         return item not in self.items and item in self.required_items
 
     def take_item(self, item):
-        if self.is_item_pickable(item):
+        if self.is_item_required(item):
             self.state = WorkerState.PICKING_UP
             # TODO: before we can pickup here we need to make sure slot is not busy and that we use conveyor belt
             #  method for pickup/drop - this is wrong as just appends item, but does not remove it from the conveyor belt!!!
