@@ -5,13 +5,16 @@ from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
 from src.domain_models.worker import Worker
-# from src.domain_models.worker_pair import WorkerPair
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 from src.exceptions.exceptions import FactoryConfigError
 from src.exceptions.messages import WRONG_FACTORY_CONFIG, INSUFFICIENT_FEED_INPUT
 
 
 class FactoryFloor(BaseModel):
+    """
+    This is the controller of the entire operation. It will navigate the production line.
+    By default the number of pairs matches the number of slots on the belt.
+    """
     def __init__(self,
                  config: FactoryFloorConfig = None,
                  feeder: Feeder = None,
@@ -19,7 +22,6 @@ class FactoryFloor(BaseModel):
                  conveyor_belt: ConveyorBelt = None,
                  num_pairs: int = None,
                  workers: List[Worker] = None,
-                 # worker_pairs: List[WorkerPair] = None,
                  id_: str = None):
         super().__init__(id_)
 
@@ -31,30 +33,8 @@ class FactoryFloor(BaseModel):
         if num_pairs and num_pairs > self.conveyor_belt.num_slots:
             raise FactoryConfigError(WRONG_FACTORY_CONFIG)
         self.time = 0
-        # self.worker_pairs = worker_pairs if worker_pairs else self.add_worker_pairs()
         self.workers = workers if workers else self.add_workers()
-    """
-    This is the controller of the entire operation. It will navigate the production line.
-    By default the number of pairs matches the number of slots on the belt.
-    """
 
-    # def add_worker_pairs(self):
-    #     """
-    #     Creates a WorkerPair per num_pairs. Each worker pair is assigned to a slot on the conveyor belt.
-    #     """
-    #     worker_pairs = []
-    #     for slot in range(self.num_pairs):
-    #         workers = [
-    #             Worker(
-    #                 conveyor_belt=self.conveyor_belt,
-    #                 required_items=self.config.REQUIRED_ITEMS,
-    #                 time_to_build=self.config.TIME_TO_BUILD,
-    #                 slot=slot
-    #             ) for _ in range(2)
-    #         ]
-    #         worker_pair = WorkerPair(workers=workers, slot=slot, conveyor_belt=self.conveyor_belt)
-    #         worker_pairs.append(worker_pair)
-    #     return worker_pairs
 
     def add_workers(self):
         """
