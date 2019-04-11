@@ -118,11 +118,13 @@ class TestFactoryFloor:
         assert factory_floor.conveyor_belt.size == 0
 
     def test_init_num_pairs(self, basic_feeder, basic_receiver):
+        config = FactoryFloorConfig
+        config.NUM_PAIRS = 1
         factory_floor = FactoryFloor(
             feeder=basic_feeder,
             receiver=basic_receiver,
-            num_pairs=1,
-            id_='factory_id'
+            id_='factory_id',
+            config=config
         )
 
         assert len(factory_floor.workers) == 2
@@ -131,8 +133,11 @@ class TestFactoryFloor:
         assert factory_floor.conveyor_belt.size == 0
 
     def test_num_pairs_exceeding_num_slots(self, factory_floor_factory):
+        class FactoryTestConfig(FactoryFloorConfig):
+            NUM_PAIRS = 10
+        config = FactoryTestConfig()
         with pytest.raises(FactoryConfigError) as exception:
-            factory_floor_factory(num_pairs=10)
+            factory_floor_factory(config=config)
 
         assert exception.value.args == (
             'Improperly configured FactoryFloor - num_pairs cannot exceed num_slots.',
@@ -163,7 +168,7 @@ class TestFactoryFloor:
 
     def test_add_new_item_to_belt_no_space_on_belt(self, factory_floor_factory, feeder_factory):
         feeder = feeder_factory(feed_input=[1])
-        factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder, num_pairs=1, conveyor_belt__num_slots=1)
+        factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder, conveyor_belt__num_slots=1)
         factory_floor.add_new_item_to_belt()
         factory_floor.add_new_item_to_belt()
         assert factory_floor.conveyor_belt.size == 1

@@ -45,4 +45,3 @@ class FactoryFloorFactory(factory.Factory):
     feeder = factory.SubFactory(FeederFactory)
     receiver = factory.SubFactory(ReceiverFactory)
     conveyor_belt = factory.SubFactory(ConveyorBeltFactory)
-    num_pairs = 3

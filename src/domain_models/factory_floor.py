@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Type
 
 from src.domain_models.common import BaseModel
 from src.domain_models.conveyor_belt import ConveyorBelt
@@ -16,11 +16,10 @@ class FactoryFloor(BaseModel):
     By default the number of pairs matches the number of slots on the belt.
     """
     def __init__(self,
-                 config: FactoryFloorConfig = None,
+                 config: Type[FactoryFloorConfig] = None,
                  feeder: Feeder = None,
                  receiver: Receiver = None,
                  conveyor_belt: ConveyorBelt = None,
-                 num_pairs: int = None,
                  workers: List[Worker] = None,
                  id_: str = None):
         super().__init__(id_)
@@ -29,12 +28,11 @@ class FactoryFloor(BaseModel):
         self.feeder = feeder if feeder else Feeder()
         self.receiver = receiver if receiver else Receiver()
         self.conveyor_belt = conveyor_belt if conveyor_belt else ConveyorBelt(num_slots=self.config.CONVEYOR_BELT_SLOTS)
-        self.num_pairs = num_pairs or self.conveyor_belt.num_slots
-        if num_pairs and num_pairs > self.conveyor_belt.num_slots:
+        self.num_pairs = self.config.NUM_PAIRS or self.conveyor_belt.num_slots
+        if self.num_pairs > self.conveyor_belt.num_slots:
             raise FactoryConfigError(WRONG_FACTORY_CONFIG)
         self.time = 0
         self.workers = workers if workers else self.add_workers()
-
 
     def add_workers(self):
         """
