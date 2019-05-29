@@ -14,6 +14,11 @@ class ConveyorBelt(Queue):
     def __init__(self, num_slots: int):
         super(). __init__()
         self.num_slots = num_slots
+        self.__slot_states = {}
+
+    def __check_validity_of_slot_number(self, slot_number: int):
+        if slot_number > self.num_slots:
+            raise ValueError(INVALID_SLOT_NUMBER)
 
     def check_at_slot(self, slot_number: int) -> Any:
         """
@@ -28,14 +33,17 @@ class ConveyorBelt(Queue):
             Item at the slot_number if present or EMPTY config value. Note that empty can also be a valid value for
             the slot set by the program.
         """
-        if slot_number > self.num_slots:
-            raise ValueError(INVALID_SLOT_NUMBER)
+        self.__check_validity_of_slot_number(slot_number)
         try:
             return self.items[slot_number]
         # We return empty as the queue is not yet filled by the feeder.
         except IndexError:
             return FactoryFloorConfig.EMPTY
 
-    def set_slot_state(self):
-        # TODO: set slot state when worker operates on it - when pick_up/drop is used.
-        pass
+    @property
+    def slot_states(self):
+        return self.__slot_states
+
+    def set_slot_state(self, slot_number: int, state: str):
+        self.__check_validity_of_slot_number(slot_number)
+        self.__slot_states[slot_number] = state
