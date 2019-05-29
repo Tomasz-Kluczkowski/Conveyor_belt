@@ -6,3 +6,5 @@ INSUFFICIENT_FEED_INPUT = (
     'Insufficient amount of items available in the feed_input of the Feeder. Please check your configuration.'
 )
 WRONG_FACTORY_CONFIG = 'Improperly configured FactoryFloor - num_pairs cannot exceed num_slots.'
+
+INVALID_SLOT_NUMBER = "Slot number exceeding conveyor belt's maximum number of slots."

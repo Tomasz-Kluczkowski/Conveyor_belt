@@ -3,6 +3,7 @@ import pytest
 from unittest import mock
 
 from src.domain_models.common import BaseModel
+from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.factory_floor import FactoryFloor
 from src.domain_models.feeder import Feeder
 from src.domain_models.worker import WorkerState
@@ -201,3 +202,12 @@ class TestConveyorBelt:
     def test_check_at_slot_with_item_not_present(self, conveyor_belt_factory):
         conveyor_belt = conveyor_belt_factory()
         assert conveyor_belt.check_at_slot(0) == FactoryFloorConfig.EMPTY
+
+    def test_check_at_slot_with_slot_number_exceeding_maximum_raises_exception(self, conveyor_belt_factory):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
+        with pytest.raises(ValueError) as exception:
+            conveyor_belt.check_at_slot(12345)
+
+        assert exception.value.args == (
+            "Slot number exceeding conveyor belt's maximum number of slots.",
+        )

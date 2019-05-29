@@ -1,5 +1,6 @@
 from typing import Any
 
+from src.exceptions.messages import INVALID_SLOT_NUMBER
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 from src.helpers.data_structures import Queue
 
@@ -27,8 +28,11 @@ class ConveyorBelt(Queue):
             Item at the slot_number if present or EMPTY config value. Note that empty can also be a valid value for
             the slot set by the program.
         """
+        if slot_number > self.num_slots:
+            raise ValueError(INVALID_SLOT_NUMBER)
         try:
             return self.items[slot_number]
+        # We return empty as the queue is not yet filled by the feeder.
         except IndexError:
             return FactoryFloorConfig.EMPTY
 
