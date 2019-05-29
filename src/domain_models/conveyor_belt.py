@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 
 from src.exceptions.messages import INVALID_SLOT_NUMBER
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
@@ -45,5 +45,14 @@ class ConveyorBelt(Queue):
         return self.__slot_states
 
     def set_slot_state(self, slot_number: int, state: str):
+        """
+        Sets slot state at slot_number.
+        """
         self.__check_validity_of_slot_number(slot_number)
         self.__slot_states[slot_number] = state
+
+    def get_slot_state(self, slot_number: int) -> Union[str, None]:
+        """
+        Returns slot state at slot_number or None if not valid slot accessed.
+        """
+        return self.__slot_states.get(slot_number)

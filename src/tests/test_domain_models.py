@@ -226,3 +226,10 @@ class TestConveyorBelt:
         conveyor_belt.set_slot_state(3, ConveyorBeltState.FREE)
 
         assert conveyor_belt.slot_states == {3: 'free'}
+
+    def test_get_slot_state(self, conveyor_belt_factory):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
+        conveyor_belt.set_slot_state(3, ConveyorBeltState.FREE)
+
+        assert conveyor_belt.get_slot_state(3) == 'free'
+        assert conveyor_belt.get_slot_state(1) is None
