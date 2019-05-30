@@ -47,7 +47,6 @@ class Worker(BaseModel):
         if self.state == WorkerState.READY_FOR_BUILDING:
             pass
         elif self.state == WorkerState.IDLE:
-            # TODO: this must be a peek type check
             item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
             self.take_item(item_on_belt)
 

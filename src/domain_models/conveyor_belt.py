@@ -15,15 +15,21 @@ class ConveyorBelt(Queue):
         super(). __init__()
         self.num_slots = num_slots
         self.__slot_states = {}
+        self.__set_slot_states_to_free()
+
+    def __set_slot_states_to_free(self):
+        for slot_number in range(self.num_slots):
+            self.__slot_states[slot_number] = ConveyorBeltState.FREE
 
     def __check_validity_of_slot_number(self, slot_number: int):
-        if slot_number > self.num_slots:
+        if slot_number > self.num_slots - 1:
             raise ValueError(INVALID_SLOT_NUMBER)
 
     def check_at_slot(self, slot_number: int) -> Any:
         """
         Checks for item at a conveyor belt slot. If queue is too short we return empty just as you would examining a
-        real conveyor belt.
+        real conveyor belt (without throwing an error).
+
         Parameters
         ----------
         slot_number
