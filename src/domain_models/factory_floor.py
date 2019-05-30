@@ -36,16 +36,16 @@ class FactoryFloor(BaseModel):
 
     def add_workers(self):
         """
-        Creates a pair of workers per num_pairs. Each worker pair is assigned to a slot on the conveyor belt.
+        Creates a pair of workers per num_pairs. Each worker pair is assigned to a slot_number on the conveyor belt.
         """
         workers = []
-        for slot in range(self.num_pairs):
+        for slot_number in range(self.num_pairs):
             for _ in range(2):
                 worker = Worker(
                         conveyor_belt=self.conveyor_belt,
                         required_items=self.config.REQUIRED_ITEMS,
                         time_to_build=self.config.TIME_TO_BUILD,
-                        slot=slot
+                        slot_number=slot_number
                     )
                 workers.append(worker)
         return workers

@@ -56,3 +56,9 @@ class ConveyorBelt(Queue):
         Returns slot state at slot_number or None if not valid slot accessed.
         """
         return self.__slot_states.get(slot_number)
+
+    def is_slot_busy(self, slot_number: int) -> bool:
+        return self.get_slot_state(slot_number) == ConveyorBeltState.BUSY
+
+    def is_slot_free(self, slot_number: int) -> bool:
+        return self.get_slot_state(slot_number) == ConveyorBeltState.FREE

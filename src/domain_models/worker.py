@@ -1,7 +1,7 @@
 from typing import List, Any
 
 from src.domain_models.common import BaseModel
-from src.domain_models.conveyor_belt import ConveyorBelt
+from src.domain_models.conveyor_belt import ConveyorBelt, ConveyorBeltState
 
 
 class WorkerState:
@@ -17,14 +17,14 @@ class Worker(BaseModel):
     def __init__(self,
                  conveyor_belt: ConveyorBelt,
                  required_items: List[Any],
-                 slot: int,
+                 slot_number: int,
                  time_to_build: int,
                  name: str = '',
                  id_: str = None):
         super().__init__(id_)
         self.conveyor_belt = conveyor_belt
         self.required_items = required_items
-        self.slot = slot
+        self.slot_number = slot_number
         self.time_to_build = time_to_build
         self.name = name
         self.items = []
@@ -38,10 +38,9 @@ class Worker(BaseModel):
         return item not in self.items and item in self.required_items
 
     def take_item(self, item):
-        if self.is_item_required(item):
+        if self.is_item_required(item) and self.conveyor_belt.is_slot_free(self.slot_number):
             self.state = WorkerState.PICKING_UP
-            # TODO: before we can pickup here we need to make sure slot is not busy and that we use conveyor belt
-            #  method for pickup/drop - this is wrong as just appends item, but does not remove it from the conveyor belt!!!
+            self.conveyor_belt.set_slot_state(self.slot_number, ConveyorBeltState.BUSY)
             self.items.append(item)
 
     def work(self):
@@ -49,7 +48,7 @@ class Worker(BaseModel):
             pass
         elif self.state == WorkerState.IDLE:
             # TODO: this must be a peek type check
-            item_on_belt = self.conveyor_belt.check_at_slot(self.slot)
+            item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
             self.take_item(item_on_belt)
 
 
