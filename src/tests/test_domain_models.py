@@ -83,8 +83,10 @@ class TestWorker:
         assert basic_worker.items == []
         assert basic_worker.state == WorkerState.IDLE
         assert basic_worker.slot_number == 1
-        assert basic_worker.time_to_build == 4
-        assert basic_worker.time_building == 0
+        assert basic_worker.operation_times.PICKING_UP == 1
+        assert basic_worker.operation_times.DROPPING == 1
+        assert basic_worker.operation_times.BUILDING == 4
+        assert basic_worker.elapsed_time_of_operation == 0
 
     def test_take_item(self, basic_worker):
         basic_worker.take_item('A')

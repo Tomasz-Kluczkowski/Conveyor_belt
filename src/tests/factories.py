@@ -4,7 +4,7 @@ from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.factory_floor import FactoryFloor
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
-from src.domain_models.worker import Worker
+from src.domain_models.worker import Worker, WorkerOperationTimes
 
 
 class FeederFactory(factory.Factory):
@@ -34,7 +34,7 @@ class WorkerFactory(factory.Factory):
     required_items = ['A', 'B']
     slot_number = 1
     conveyor_belt = factory.SubFactory(ConveyorBeltFactory)
-    time_to_build = 4
+    operation_times = WorkerOperationTimes
 
 
 class FactoryFloorFactory(factory.Factory):

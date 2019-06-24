@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Type
 
 from src.domain_models.common import BaseModel
 from src.domain_models.conveyor_belt import ConveyorBelt, ConveyorBeltState
@@ -13,23 +13,29 @@ class WorkerState:
     FINISHED_BUILDING = 'finished_building'
 
 
+class WorkerOperationTimes:
+    PICKING_UP = 1
+    DROPPING = 1
+    BUILDING = 4
+
+
 class Worker(BaseModel):
     def __init__(self,
                  conveyor_belt: ConveyorBelt,
                  required_items: List[Any],
                  slot_number: int,
-                 time_to_build: int,
+                 operation_times: Type[WorkerOperationTimes],
                  name: str = '',
                  id_: str = None):
         super().__init__(id_)
         self.conveyor_belt = conveyor_belt
         self.required_items = required_items
         self.slot_number = slot_number
-        self.time_to_build = time_to_build
+        self.operation_times = operation_times
         self.name = name
         self.items = []
         self.state = WorkerState.IDLE
-        self.time_building = 0
+        self.elapsed_time_of_operation = 0
 
     def is_ready_for_building(self):
         return len(self.items) == len(self.required_items)
@@ -46,6 +52,7 @@ class Worker(BaseModel):
     def work(self):
         if self.state == WorkerState.READY_FOR_BUILDING:
             pass
+
         elif self.state == WorkerState.IDLE:
             item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
             self.take_item(item_on_belt)

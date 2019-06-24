@@ -4,7 +4,7 @@ from src.domain_models.common import BaseModel
 from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
-from src.domain_models.worker import Worker
+from src.domain_models.worker import Worker, WorkerOperationTimes
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 from src.exceptions.exceptions import FactoryConfigError
 from src.exceptions.messages import WRONG_FACTORY_CONFIG, INSUFFICIENT_FEED_INPUT
@@ -44,7 +44,7 @@ class FactoryFloor(BaseModel):
                 worker = Worker(
                         conveyor_belt=self.conveyor_belt,
                         required_items=self.config.REQUIRED_ITEMS,
-                        time_to_build=self.config.TIME_TO_BUILD,
+                        operation_times=WorkerOperationTimes,
                         slot_number=slot_number
                     )
                 workers.append(worker)
