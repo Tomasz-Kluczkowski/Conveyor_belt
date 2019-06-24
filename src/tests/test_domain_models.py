@@ -86,20 +86,11 @@ class TestWorker:
         assert basic_worker.operation_times.PICKING_UP == 1
         assert basic_worker.operation_times.DROPPING == 1
         assert basic_worker.operation_times.BUILDING == 4
-        assert basic_worker.elapsed_time_of_operation == 0
+        assert basic_worker.remaining_time_of_operation == 0
 
     def test_take_item(self, basic_worker):
         basic_worker.take_item('A')
         assert basic_worker.items == ['A']
-
-    def test_take_item_does_not_add_duplicates(self, basic_worker):
-        basic_worker.take_item('A')
-        basic_worker.take_item('A')
-        assert basic_worker.items == ['A']
-
-    def test_take_item_does_not_take_not_required(self, basic_worker):
-        basic_worker.take_item('Q')
-        assert basic_worker.items == []
 
 
 class TestFactoryFloor:

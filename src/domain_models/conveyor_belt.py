@@ -46,6 +46,10 @@ class ConveyorBelt(Queue):
         except IndexError:
             return FactoryFloorConfig.EMPTY
 
+    def pickup_at_slot(self, slot_number: int):
+        self.__check_validity_of_slot_number(slot_number)
+    #     TODO: think how to add operation between worker and conveyor belt here
+
     @property
     def slot_states(self):
         return self.__slot_states

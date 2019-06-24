@@ -35,7 +35,7 @@ class Worker(BaseModel):
         self.name = name
         self.items = []
         self.state = WorkerState.IDLE
-        self.elapsed_time_of_operation = 0
+        self.remaining_time_of_operation = 0
 
     def is_ready_for_building(self):
         return len(self.items) == len(self.required_items)
@@ -44,17 +44,15 @@ class Worker(BaseModel):
         return item not in self.items and item in self.required_items
 
     def take_item(self, item):
-        if self.is_item_required(item) and self.conveyor_belt.is_slot_free(self.slot_number):
             self.state = WorkerState.PICKING_UP
             self.conveyor_belt.set_slot_state(self.slot_number, ConveyorBeltState.BUSY)
             self.items.append(item)
 
     def work(self):
-        if self.state == WorkerState.READY_FOR_BUILDING:
-            pass
-
-        elif self.state == WorkerState.IDLE:
+        if self.state == WorkerState.IDLE and self.conveyor_belt.is_slot_free(self.slot_number):
             item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
-            self.take_item(item_on_belt)
+            if self.is_item_required(item_on_belt):
+                self.take_item(item_on_belt)
 
-
+        elif self.state == WorkerState.READY_FOR_BUILDING:
+            pass
