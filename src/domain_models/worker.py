@@ -44,15 +44,32 @@ class Worker(BaseModel):
         return item not in self.items and item in self.required_items
 
     def take_item(self, item):
-            self.state = WorkerState.PICKING_UP
-            self.conveyor_belt.set_slot_state(self.slot_number, ConveyorBeltState.BUSY)
-            self.items.append(item)
+        self.state = WorkerState.PICKING_UP
+        self.remaining_time_of_operation = self.operation_times.PICKING_UP
+
+        self.conveyor_belt.set_slot_state(self.slot_number, ConveyorBeltState.BUSY)
+        self.items.append(item)
+
+    def execute_operation_period(self):
+        """
+        Reduce remaining_time_of_operation if greater than zero. If that caused it to be equal to zero
+        change state to idle - operation has completed.
+        """
+        if self.remaining_time_of_operation > 0:
+            self.remaining_time_of_operation -= 1
+            if self.remaining_time_of_operation == 0:
+                self.state = WorkerState.IDLE
 
     def work(self):
+        self.execute_operation_period()
+
         if self.state == WorkerState.IDLE and self.conveyor_belt.is_slot_free(self.slot_number):
             item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
             if self.is_item_required(item_on_belt):
                 self.take_item(item_on_belt)
 
-        elif self.state == WorkerState.READY_FOR_BUILDING:
+        if self.is_ready_for_building():
+            self.state = WorkerState.READY_FOR_BUILDING
+
+        if self.state == WorkerState.READY_FOR_BUILDING:
             pass
