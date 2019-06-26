@@ -37,6 +37,18 @@ class Worker(BaseModel):
         self.state = WorkerState.IDLE
         self.remaining_time_of_operation = 0
 
+    def attempt_to_pickup_item(self):
+        if self.state == WorkerState.IDLE and self.conveyor_belt.is_slot_free(self.slot_number):
+            item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
+
+            if self.is_item_required(item_on_belt):
+                self.take_item(item_on_belt)
+
+    def attempt_to_build(self):
+        if self.state == WorkerState.READY_FOR_BUILDING:
+            self.state = WorkerState.BUILDING
+            self.remaining_time_of_operation = WorkerOperationTimes.BUILDING
+
     def is_ready_for_building(self):
         return len(self.items) == len(self.required_items)
 
@@ -49,6 +61,8 @@ class Worker(BaseModel):
 
         self.conveyor_belt.set_slot_state(self.slot_number, ConveyorBeltState.BUSY)
         self.items.append(item)
+        if self.is_ready_for_building():
+            self.state = WorkerState.READY_FOR_BUILDING
 
     def execute_operation_period(self):
         """
@@ -63,13 +77,7 @@ class Worker(BaseModel):
     def work(self):
         self.execute_operation_period()
 
-        if self.state == WorkerState.IDLE and self.conveyor_belt.is_slot_free(self.slot_number):
-            item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
-            if self.is_item_required(item_on_belt):
-                self.take_item(item_on_belt)
+        self.attempt_to_pickup_item()
 
-        if self.is_ready_for_building():
-            self.state = WorkerState.READY_FOR_BUILDING
+        self.attempt_to_build()
 
-        if self.state == WorkerState.READY_FOR_BUILDING:
-            pass
