@@ -16,10 +16,15 @@ class ConveyorBelt(Queue):
         self.num_slots = num_slots
         self.__slot_states = {}
         self.__set_slot_states_to_free()
+        self.__set_slots_to_empty()
 
     def __set_slot_states_to_free(self):
         for slot_number in range(self.num_slots):
             self.__slot_states[slot_number] = ConveyorBeltState.FREE
+
+    def __set_slots_to_empty(self):
+        for slot_number in range(self.num_slots):
+            self.enqueue(FactoryFloorConfig.EMPTY)
 
     def __check_validity_of_slot_number(self, slot_number: int):
         if slot_number > self.num_slots - 1:
@@ -46,10 +51,6 @@ class ConveyorBelt(Queue):
         except IndexError:
             return FactoryFloorConfig.EMPTY
 
-    def pickup_at_slot(self, slot_number: int):
-        self.__check_validity_of_slot_number(slot_number)
-    #     TODO: think how to add operation between worker and conveyor belt here
-
     @property
     def slot_states(self):
         return self.__slot_states
@@ -72,3 +73,7 @@ class ConveyorBelt(Queue):
 
     def is_slot_free(self, slot_number: int) -> bool:
         return self.get_slot_state(slot_number) == ConveyorBeltState.FREE
+
+    def put_item_in_slot(self, slot_number: int, item: str):
+        self.__check_validity_of_slot_number(slot_number)
+        self.items[slot_number] = item
