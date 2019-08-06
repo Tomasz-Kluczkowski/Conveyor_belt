@@ -40,8 +40,9 @@ class FactoryFloor(BaseModel):
         """
         workers = []
         for slot_number in range(self.num_pairs):
-            for _ in range(2):
+            for pair_number in range(2):
                 worker = Worker(
+                        name=f'slot={slot_number}, pair={pair_number}',
                         conveyor_belt=self.conveyor_belt,
                         required_items=self.config.REQUIRED_ITEMS,
                         operation_times=WorkerOperationTimes,
@@ -52,11 +53,10 @@ class FactoryFloor(BaseModel):
 
     def push_item_to_receiver(self):
         """
-        Moves last item on the belt to the receiver when the belt is full.
+        Moves last item on the belt to the receiver.
         """
-        if self.conveyor_belt.size == self.conveyor_belt.num_slots:
-            item_to_receive = self.conveyor_belt.dequeue()
-            self.receiver.receive(item_to_receive)
+        item_to_receive = self.conveyor_belt.dequeue()
+        self.receiver.receive(item_to_receive)
 
     def add_new_item_to_belt(self):
         """
@@ -66,7 +66,7 @@ class FactoryFloor(BaseModel):
             new_belt_item = self.feeder.feed()
             self.conveyor_belt.enqueue(new_belt_item)
 
-    def run_belt(self):
+    def run(self):
         """
         Main event loop.
         """
@@ -81,11 +81,6 @@ class FactoryFloor(BaseModel):
                 raise FactoryConfigError(INSUFFICIENT_FEED_INPUT)
 
             # make each pair work
-            # for worker_pair in self.worker_pairs:
-            # #     now find who in the pair can actually work (so check the status)
-            #     for worker in worker_pair.workers:
-            #         worker.work()
-
-            #      if worker is idle, pick up stuff
-            # finally always increase time at the end of each tick
+            for worker in self.workers:
+                worker.work()
             self.time += 1
