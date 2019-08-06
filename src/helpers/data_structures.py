@@ -16,3 +16,7 @@ class Queue:
     @property
     def size(self):
         return len(self.items)
+
+
+class MaxSizeQueue(Queue):
+    pass

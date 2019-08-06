@@ -82,7 +82,7 @@ class TestWorker:
         assert basic_worker.required_items == ['A', 'B']
         assert basic_worker.items == []
         assert basic_worker.state == WorkerState.IDLE
-        assert basic_worker.slot_number == 1
+        assert basic_worker.slot_number == 0
         assert basic_worker.operation_times.PICKING_UP == 1
         assert basic_worker.operation_times.DROPPING == 1
         assert basic_worker.operation_times.BUILDING == 4
@@ -106,7 +106,7 @@ class TestFactoryFloor:
         assert len(factory_floor.workers) == 6
         assert factory_floor.feeder == basic_feeder
         assert factory_floor.receiver == basic_receiver
-        assert factory_floor.conveyor_belt.size == 0
+        assert factory_floor.conveyor_belt.size == 3
 
     def test_init_num_pairs(self, basic_feeder, basic_receiver):
         config = FactoryFloorConfig
@@ -121,7 +121,7 @@ class TestFactoryFloor:
         assert len(factory_floor.workers) == 2
         assert factory_floor.feeder == basic_feeder
         assert factory_floor.receiver == basic_receiver
-        assert factory_floor.conveyor_belt.size == 0
+        assert factory_floor.conveyor_belt.size == 3
 
     def test_num_pairs_exceeding_num_slots(self, factory_floor_factory):
         class FactoryTestConfig(FactoryFloorConfig):
@@ -136,61 +136,103 @@ class TestFactoryFloor:
 
     def test_push_item_to_receiver(self, factory_floor_factory):
         factory_floor: FactoryFloor = factory_floor_factory()
-        factory_floor.conveyor_belt.enqueue(1)
-        factory_floor.conveyor_belt.enqueue(2)
-        factory_floor.conveyor_belt.enqueue(3)
+        [factory_floor.conveyor_belt.dequeue() for _ in range(3)]
+        [factory_floor.conveyor_belt.enqueue(i) for i in range(3)]
         factory_floor.push_item_to_receiver()
-        assert factory_floor.receiver.received_items == [1]
+        assert factory_floor.receiver.received_items == [0]
         assert factory_floor.conveyor_belt.size == 2
-
-    def test_push_item_to_receiver_belt_not_full(self, factory_floor_factory):
-        factory_floor: FactoryFloor = factory_floor_factory()
-        factory_floor.conveyor_belt.enqueue(1)
-        factory_floor.conveyor_belt.enqueue(2)
-        factory_floor.push_item_to_receiver()
-        assert factory_floor.receiver.received_items == []
 
     def test_add_new_item_to_belt(self, factory_floor_factory, feeder_factory):
         feeder = feeder_factory(feed_input=[1])
         factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder)
+        factory_floor.conveyor_belt.dequeue()
         factory_floor.add_new_item_to_belt()
-        assert factory_floor.conveyor_belt.size == 1
-        assert factory_floor.conveyor_belt.dequeue() == 1
+        assert factory_floor.conveyor_belt.size == 3
+        assert [factory_floor.conveyor_belt.dequeue() for i in range(3)] == [
+            FactoryFloorConfig.EMPTY,
+            FactoryFloorConfig.EMPTY,
+            1
+        ]
 
     def test_add_new_item_to_belt_no_space_on_belt(self, factory_floor_factory, feeder_factory):
-        feeder = feeder_factory(feed_input=[1])
-        factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder, conveyor_belt__num_slots=1)
+        factory_floor: FactoryFloor = factory_floor_factory()
         factory_floor.add_new_item_to_belt()
-        factory_floor.add_new_item_to_belt()
-        assert factory_floor.conveyor_belt.size == 1
-        assert factory_floor.conveyor_belt.dequeue() == 1
+        assert factory_floor.conveyor_belt.size == 3
+        assert factory_floor.conveyor_belt.dequeue() == FactoryFloorConfig.EMPTY
 
     def test_basic_run_belt(self, factory_floor_factory, feeder_factory):
         feeder = feeder_factory(feed_input=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder)
-        factory_floor.run_belt()
-        assert factory_floor.receiver.received_items == [1, 2, 3, 4, 5, 6, 7]
+        factory_floor.run()
+        assert factory_floor.receiver.received_items == [
+            FactoryFloorConfig.EMPTY, FactoryFloorConfig.EMPTY, FactoryFloorConfig.EMPTY, 1, 2, 3, 4, 5, 6, 7]
 
     def test_basic_run_belt_run_out_of_feed_items(self, factory_floor_factory, feeder_factory):
         feeder = feeder_factory(feed_input=[1])
         factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder)
 
         with pytest.raises(FactoryConfigError) as exception:
-            factory_floor.run_belt()
+            factory_floor.run()
 
         assert exception.value.args == (
             'Insufficient amount of items available in the feed_input of the Feeder. Please check your configuration.',
         )
 
+    def test_run_factory_one_product_created(self, factory_floor_factory, feeder_factory):
+        config = FactoryFloorConfig
+        config.NUM_STEPS = 11
+        feeder = feeder_factory(
+            feed_input=['A', 'B', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E']
+        )
+        factory_floor: FactoryFloor = factory_floor_factory(
+            config=config,
+            feeder=feeder
+        )
+        factory_floor.run()
+        assert factory_floor.receiver.received_items == ['E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P']
+
+    def test_run_factory_two_products_created(self, factory_floor_factory, feeder_factory):
+        config = FactoryFloorConfig
+        config.NUM_STEPS = 13
+        feeder = feeder_factory(
+            feed_input=['A', 'B', 'A', 'B', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E']
+        )
+        factory_floor: FactoryFloor = factory_floor_factory(
+            config=config,
+            feeder=feeder
+        )
+        factory_floor.run()
+        assert factory_floor.receiver.received_items == [
+            'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E', 'P'
+        ]
+
+    def test_run_factory_three_products_created(self, factory_floor_factory, feeder_factory):
+        config = FactoryFloorConfig
+        config.NUM_STEPS = 15
+        feeder = feeder_factory(
+            feed_input=['A', 'B', 'A', 'B', 'A', 'B', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E']
+        )
+        factory_floor: FactoryFloor = factory_floor_factory(
+            config=config,
+            feeder=feeder
+        )
+        factory_floor.run()
+        assert factory_floor.receiver.received_items == [
+            'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E', 'P', 'E', 'P'
+        ]
+
 
 class TestConveyorBelt:
-    def test_initialises_with_all_slots_free(self, conveyor_belt_factory):
+    def test_initialization(self, conveyor_belt_factory):
         conveyor_belt: ConveyorBelt = conveyor_belt_factory()
         assert conveyor_belt.slot_states == {
             0: 'free',
             1: 'free',
             2: 'free',
         }
+        assert conveyor_belt.num_slots == 3
+        assert conveyor_belt.size == 3
+        assert conveyor_belt.items == [FactoryFloorConfig.EMPTY for i in range(3)]
 
     def test_check_at_slot_with_item_present(self, conveyor_belt_factory):
         conveyor_belt = conveyor_belt_factory()

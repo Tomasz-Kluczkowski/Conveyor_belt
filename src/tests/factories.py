@@ -32,7 +32,7 @@ class WorkerFactory(factory.Factory):
     id_ = 'worker_id'
     name = 'Tomek'
     required_items = ['A', 'B']
-    slot_number = 1
+    slot_number = 0
     conveyor_belt = factory.SubFactory(ConveyorBeltFactory)
     operation_times = WorkerOperationTimes
 
