@@ -5,6 +5,7 @@ from src.domain_models.factory_floor import FactoryFloor
 from src.domain_models.feeder import Feeder
 from src.domain_models.receiver import Receiver
 from src.domain_models.worker import Worker, WorkerOperationTimes
+from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 
 
 class FeederFactory(factory.Factory):
@@ -23,7 +24,7 @@ class ReceiverFactory(factory.Factory):
 class ConveyorBeltFactory(factory.Factory):
     class Meta:
         model = ConveyorBelt
-    num_slots = 3
+    config = FactoryFloorConfig()
 
 
 class WorkerFactory(factory.Factory):
@@ -31,8 +32,8 @@ class WorkerFactory(factory.Factory):
         model = Worker
     id_ = 'worker_id'
     name = 'Tomek'
-    required_items = ['A', 'B']
     slot_number = 0
+    config = FactoryFloorConfig()
     conveyor_belt = factory.SubFactory(ConveyorBeltFactory)
     operation_times = WorkerOperationTimes
 

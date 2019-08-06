@@ -16,7 +16,7 @@ class FactoryFloor(BaseModel):
     By default the number of pairs matches the number of slots on the belt.
     """
     def __init__(self,
-                 config: Type[FactoryFloorConfig] = None,
+                 config: FactoryFloorConfig = None,
                  feeder: Feeder = None,
                  receiver: Receiver = None,
                  conveyor_belt: ConveyorBelt = None,
@@ -24,12 +24,12 @@ class FactoryFloor(BaseModel):
                  id_: str = None):
         super().__init__(id_)
 
-        self.config = config if config else FactoryFloorConfig
+        self.config = config if config else FactoryFloorConfig()
         self.feeder = feeder if feeder else Feeder()
         self.receiver = receiver if receiver else Receiver()
-        self.conveyor_belt = conveyor_belt if conveyor_belt else ConveyorBelt(num_slots=self.config.CONVEYOR_BELT_SLOTS)
-        self.num_pairs = self.config.NUM_PAIRS or self.conveyor_belt.num_slots
-        if self.num_pairs > self.conveyor_belt.num_slots:
+        self.conveyor_belt = conveyor_belt if conveyor_belt else ConveyorBelt(config=self.config)
+        self.num_pairs = self.config.num_pairs or self.conveyor_belt.config.conveyor_belt_slots
+        if self.num_pairs > self.conveyor_belt.config.conveyor_belt_slots:
             raise FactoryConfigError(WRONG_FACTORY_CONFIG)
         self.time = 0
         self.workers = workers if workers else self.add_workers()
@@ -42,9 +42,9 @@ class FactoryFloor(BaseModel):
         for slot_number in range(self.num_pairs):
             for pair_number in range(2):
                 worker = Worker(
+                        config=self.config,
                         name=f'slot={slot_number}, pair={pair_number}',
                         conveyor_belt=self.conveyor_belt,
-                        required_items=self.config.REQUIRED_ITEMS,
                         operation_times=WorkerOperationTimes,
                         slot_number=slot_number
                     )
@@ -62,7 +62,7 @@ class FactoryFloor(BaseModel):
         """
         Adds new item to the conveyor belt.
         """
-        if self.conveyor_belt.size < self.conveyor_belt.num_slots:
+        if self.conveyor_belt.size < self.conveyor_belt.config.conveyor_belt_slots:
             new_belt_item = self.feeder.feed()
             self.conveyor_belt.enqueue(new_belt_item)
 
@@ -70,7 +70,7 @@ class FactoryFloor(BaseModel):
         """
         Main event loop.
         """
-        for step in range(self.config.NUM_STEPS):
+        for step in range(self.config.num_steps):
             # move farthest item on belt to the receiver if line full
             self.push_item_to_receiver()
 

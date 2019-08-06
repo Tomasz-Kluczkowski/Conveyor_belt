@@ -11,23 +11,23 @@ class ConveyorBeltState:
 
 
 class ConveyorBelt(Queue):
-    def __init__(self, num_slots: int):
+    def __init__(self, config: FactoryFloorConfig):
         super(). __init__()
-        self.num_slots = num_slots
+        self.config = config
         self.__slot_states = {}
         self.__set_slot_states_to_free()
         self.__set_slots_to_empty()
 
     def __set_slot_states_to_free(self):
-        for slot_number in range(self.num_slots):
+        for slot_number in range(self.config.conveyor_belt_slots):
             self.__slot_states[slot_number] = ConveyorBeltState.FREE
 
     def __set_slots_to_empty(self):
-        for slot_number in range(self.num_slots):
-            self.enqueue(FactoryFloorConfig.EMPTY)
+        for slot_number in range(self.config.conveyor_belt_slots):
+            self.enqueue(self.config.empty_code)
 
     def __check_validity_of_slot_number(self, slot_number: int):
-        if slot_number > self.num_slots - 1:
+        if slot_number > self.config.conveyor_belt_slots - 1:
             raise ValueError(INVALID_SLOT_NUMBER)
 
     def check_at_slot(self, slot_number: int) -> Any:
@@ -49,7 +49,7 @@ class ConveyorBelt(Queue):
             return self.items[slot_number]
         # We return empty as the queue is not yet filled by the feeder.
         except IndexError:
-            return FactoryFloorConfig.EMPTY
+            return self.config.empty_code
 
     @property
     def slot_states(self):

@@ -22,15 +22,15 @@ class WorkerOperationTimes:
 
 class Worker(BaseModel):
     def __init__(self,
+                 config: FactoryFloorConfig,
                  conveyor_belt: ConveyorBelt,
-                 required_items: List[Any],
                  slot_number: int,
                  operation_times: Type[WorkerOperationTimes],
                  name: str = '',
                  id_: str = None):
         super().__init__(id_)
+        self.config = config
         self.conveyor_belt = conveyor_belt
-        self.required_items = required_items
         self.slot_number = slot_number
         self.operation_times = operation_times
         self.name = name
@@ -50,10 +50,10 @@ class Worker(BaseModel):
             self.remaining_time_of_operation = WorkerOperationTimes.BUILDING
 
     def is_ready_for_building(self):
-        return len(self.items) == len(self.required_items)
+        return len(self.items) == len(self.config.required_items)
 
     def is_item_required(self, item):
-        return item not in self.items and item in self.required_items
+        return item not in self.items and item in self.config.required_items
 
     def take_item(self, item):
         self.state = WorkerState.PICKING_UP
@@ -61,7 +61,7 @@ class Worker(BaseModel):
 
         self.conveyor_belt.set_slot_state(self.slot_number, ConveyorBeltState.BUSY)
         self.items.append(item)
-        self.conveyor_belt.put_item_in_slot(slot_number=self.slot_number, item=FactoryFloorConfig.EMPTY)
+        self.conveyor_belt.put_item_in_slot(slot_number=self.slot_number, item=self.config.empty_code)
 
     def execute_operation_period(self):
         """
@@ -85,7 +85,7 @@ class Worker(BaseModel):
         self.state = WorkerState.DROPPING
         self.remaining_time_of_operation = self.operation_times.DROPPING
         self.conveyor_belt.put_item_in_slot(
-            slot_number=self.slot_number, item=FactoryFloorConfig.PRODUCT_CODE)
+            slot_number=self.slot_number, item=self.config.product_code)
         self.items = []
 
     def work(self):

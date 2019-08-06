@@ -1,6 +1,12 @@
 import pytest
 
+from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 from src.tests.factories import FeederFactory, ReceiverFactory, WorkerFactory, FactoryFloorFactory, ConveyorBeltFactory
+
+
+@pytest.fixture
+def factory_floor_config():
+    return FactoryFloorConfig()
 
 
 @pytest.fixture()
