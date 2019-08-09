@@ -89,7 +89,8 @@ class TestWorker:
         assert basic_worker.remaining_time_of_operation == 0
 
     def test_take_item(self, basic_worker):
-        basic_worker.take_item('A')
+        basic_worker.conveyor_belt.enqueue('A')
+        basic_worker.take_item()
         assert basic_worker.items == ['A']
 
 
