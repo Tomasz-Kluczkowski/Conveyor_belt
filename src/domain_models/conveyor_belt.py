@@ -14,13 +14,13 @@ class ConveyorBelt(Queue):
     def __init__(self, config: FactoryFloorConfig):
         super(). __init__()
         self.config = config
-        self.__slot_states = {}
-        self.__set_slot_states_to_free()
-        self.__set_slots_to_empty()
+        self._slot_states = {}
+        self._set_slot_states_to_free()
+        self._set_slots_to_empty()
 
     @property
     def slot_states(self):
-        return self.__slot_states
+        return self._slot_states
 
     def check_item_at_slot(self, slot_number: int) -> Any:
         """
@@ -34,8 +34,7 @@ class ConveyorBelt(Queue):
         -------
             Item at the slot_number.
         """
-        # TODO: Make items private in the Queue. give necessary access methods if needed.
-        return self.items[slot_number]
+        return self._items[slot_number]
 
     def put_item_in_slot(self, slot_number: int, item: str):
         """
@@ -48,8 +47,8 @@ class ConveyorBelt(Queue):
         item
             Item which we want to insert.
         """
-        self.__set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
-        self.items[slot_number] = item
+        self._set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
+        self._items[slot_number] = item
 
     def confirm_operation_finished(self, slot_number: int):
         """
@@ -61,7 +60,7 @@ class ConveyorBelt(Queue):
         slot_number
             Slot of the conveyor belt at which we need to insert the item.
         """
-        self.__set_slot_state(slot_number=slot_number, state=ConveyorBeltState.FREE)
+        self._set_slot_state(slot_number=slot_number, state=ConveyorBeltState.FREE)
 
     def is_slot_busy(self, slot_number: int) -> bool:
         """
@@ -72,7 +71,7 @@ class ConveyorBelt(Queue):
         slot_number
             Slot of the conveyor belt at which we need to check if busy.
         """
-        return self.__get_slot_state(slot_number) == ConveyorBeltState.BUSY
+        return self._get_slot_state(slot_number) == ConveyorBeltState.BUSY
 
     def is_slot_empty(self, slot_number: int) -> bool:
         """
@@ -84,7 +83,7 @@ class ConveyorBelt(Queue):
             Slot of the conveyor belt at which we need to check if empty.
         """
 
-        return self.items[slot_number] == self.config.empty_code
+        return self._items[slot_number] == self.config.empty_code
 
     def is_slot_free(self, slot_number: int) -> bool:
         """
@@ -95,7 +94,7 @@ class ConveyorBelt(Queue):
         slot_number
             Slot of the conveyor belt at which we need to check if free.
         """
-        return self.__get_slot_state(slot_number) == ConveyorBeltState.FREE
+        return self._get_slot_state(slot_number) == ConveyorBeltState.FREE
 
     def retrieve_item_from_slot(self, slot_number: int) -> Any:
         """
@@ -111,22 +110,22 @@ class ConveyorBelt(Queue):
         item
             Item in the slot with slot_number.
         """
-        self.__set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
+        self._set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
         item = self.check_item_at_slot(slot_number=slot_number)
         self.put_item_in_slot(slot_number=slot_number, item=self.config.empty_code)
 
         return item
 
-    def __set_slot_states_to_free(self):
+    def _set_slot_states_to_free(self):
         for slot_number in range(self.config.conveyor_belt_slots):
-            self.__slot_states[slot_number] = ConveyorBeltState.FREE
+            self._slot_states[slot_number] = ConveyorBeltState.FREE
 
-    def __set_slots_to_empty(self):
+    def _set_slots_to_empty(self):
         for slot_number in range(self.config.conveyor_belt_slots):
             self.enqueue(self.config.empty_code)
 
-    def __set_slot_state(self, slot_number: int, state: str):
-        self.__slot_states[slot_number] = state
+    def _set_slot_state(self, slot_number: int, state: str):
+        self._slot_states[slot_number] = state
 
-    def __get_slot_state(self, slot_number: int) -> Union[str, None]:
-        return self.__slot_states.get(slot_number)
+    def _get_slot_state(self, slot_number: int) -> Union[str, None]:
+        return self._slot_states.get(slot_number)
