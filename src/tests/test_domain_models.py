@@ -90,7 +90,7 @@ class TestWorker:
 
     def test_take_item(self, basic_worker):
         basic_worker.conveyor_belt.enqueue('A')
-        basic_worker.take_item()
+        basic_worker.pickup_item()
         assert basic_worker.items == ['A']
 
 
