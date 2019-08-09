@@ -69,7 +69,7 @@ class Worker(BaseModel):
         return len(self.items) == len(self.config.required_items)
 
     def is_item_required(self):
-        item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
+        item_on_belt = self.conveyor_belt.check_item_at_slot(self.slot_number)
         return item_on_belt not in self.items and item_on_belt in self.config.required_items
 
     def execute_operation_period(self):
@@ -78,7 +78,7 @@ class Worker(BaseModel):
     def update_state(self):
         if self.state in [WorkerState.PICKING_UP, WorkerState.DROPPING]:
             self.state = WorkerState.IDLE
-            self.conveyor_belt.set_slot_state(self.slot_number, ConveyorBeltState.FREE)
+            self.conveyor_belt.confirm_operation_finished(slot_number=self.slot_number)
         elif self.state == WorkerState.IDLE and self.is_ready_for_building():
             self.state = WorkerState.READY_FOR_BUILDING
         elif self.state == WorkerState.BUILDING:
