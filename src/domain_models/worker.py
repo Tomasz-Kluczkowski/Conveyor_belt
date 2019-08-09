@@ -38,7 +38,7 @@ class Worker(BaseModel):
         self.state = WorkerState.IDLE
         self.remaining_time_of_operation = 0
 
-    def take_item(self):
+    def pickup_item(self):
         self.state = WorkerState.PICKING_UP
         self.remaining_time_of_operation = self.operation_times.PICKING_UP
 
@@ -48,10 +48,16 @@ class Worker(BaseModel):
     def can_pickup_item(self):
         return self.state == WorkerState.IDLE and self.conveyor_belt.is_slot_free(self.slot_number)
 
+    def can_drop_product(self):
+        return (
+                self.state == WorkerState.FINISHED_BUILDING and
+                self.conveyor_belt.is_slot_free(self.slot_number) and
+                self.conveyor_belt.is_slot_empty(self.slot_number)
+        )
+
     def build_product(self):
-        if self.state == WorkerState.READY_FOR_BUILDING:
-            self.state = WorkerState.BUILDING
-            self.remaining_time_of_operation = WorkerOperationTimes.BUILDING
+        self.state = WorkerState.BUILDING
+        self.remaining_time_of_operation = WorkerOperationTimes.BUILDING
 
     def is_operating(self):
         return self.remaining_time_of_operation > 0
@@ -62,17 +68,11 @@ class Worker(BaseModel):
     def is_ready_for_building(self):
         return len(self.items) == len(self.config.required_items)
 
-    def check_item_at_slot(self):
-        return self.conveyor_belt.check_at_slot(self.slot_number)
-
     def is_item_required(self):
-        item_on_belt = self.check_item_at_slot()
+        item_on_belt = self.conveyor_belt.check_at_slot(self.slot_number)
         return item_on_belt not in self.items and item_on_belt in self.config.required_items
 
     def execute_operation_period(self):
-        """
-        Reduce remaining_time_of_operation.
-        """
         self.remaining_time_of_operation -= 1
 
     def update_state(self):
@@ -99,10 +99,11 @@ class Worker(BaseModel):
             self.update_state()
 
         if self.can_pickup_item() and self.is_item_required():
-            self.take_item()
+            self.pickup_item()
 
-        self.build_product()
-        # TODO: HAVE TO CHECK HERE THAT SLOT IS EMPTY (CONTAINS 'E')
-        if self.state == WorkerState.FINISHED_BUILDING and self.conveyor_belt.is_slot_free(self.slot_number):
+        if self.state == WorkerState.READY_FOR_BUILDING:
+            self.build_product()
+
+        if self.can_drop_product():
             self.drop_product()
 
