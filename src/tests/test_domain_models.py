@@ -230,6 +230,7 @@ class TestFactoryFloor:
 class TestConveyorBelt:
     def test_initialization(self, conveyor_belt_factory, factory_floor_config):
         conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
+
         assert conveyor_belt.slot_states == {
             0: 'free',
             1: 'free',
@@ -238,64 +239,71 @@ class TestConveyorBelt:
         assert conveyor_belt.size == 3
         assert conveyor_belt.items == [factory_floor_config.empty_code for i in range(3)]
 
-    def test_check_at_slot_with_item_present(self, conveyor_belt_factory):
+    def test_check_item_at_slot_with_item_present(self, conveyor_belt_factory):
         conveyor_belt = conveyor_belt_factory()
         conveyor_belt.enqueue(1)
-        assert conveyor_belt.check_at_slot(0) == 1
 
-    def test_check_at_slot_with_item_not_present(self, conveyor_belt_factory, factory_floor_config):
+        assert conveyor_belt.check_item_at_slot(0) == 1
+
+    def test_check_item_at_slot_with_item_not_present(self, conveyor_belt_factory, factory_floor_config):
         conveyor_belt = conveyor_belt_factory(config=factory_floor_config)
-        assert conveyor_belt.check_at_slot(0) == factory_floor_config.empty_code
 
-    def test_check_at_slot_with_slot_number_exceeding_maximum_raises_exception(self, conveyor_belt_factory):
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
-        with pytest.raises(ValueError) as exception:
-            conveyor_belt.check_at_slot(12345)
+        assert conveyor_belt.check_item_at_slot(0) == factory_floor_config.empty_code
 
-        assert exception.value.args == (
-            "Slot number exceeding conveyor belt's maximum number of slots.",
-        )
+    def test_put_item_in_slot_adds_item_and_sets_slot_to_busy(self, conveyor_belt_factory, factory_floor_config):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
+        conveyor_belt.put_item_in_slot(slot_number=0, item='A')
 
-    def test_set_slot_state_with_slot_number_exceeding_maximum_raises_exception(self, conveyor_belt_factory):
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
-        with pytest.raises(ValueError) as exception:
-            conveyor_belt.set_slot_state(3, 'test_state')
+        assert conveyor_belt.check_item_at_slot(slot_number=0) == 'A'
+        assert conveyor_belt.is_slot_busy(slot_number=0)
 
-        assert exception.value.args == (
-            "Slot number exceeding conveyor belt's maximum number of slots.",
-        )
+    def test_confirm_operation_finished_changes_slot_state_to_free(self, conveyor_belt_factory, factory_floor_config):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
+        conveyor_belt.put_item_in_slot(slot_number=0, item='A')
 
-    def test_set_slot_state(self, conveyor_belt_factory):
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
-        conveyor_belt.set_slot_state(2, ConveyorBeltState.BUSY)
+        assert conveyor_belt.is_slot_busy(slot_number=0)
+        conveyor_belt.confirm_operation_finished(slot_number=0)
+        assert not conveyor_belt.is_slot_busy(slot_number=0)
 
-        assert conveyor_belt.slot_states == {
-            0: 'free',
-            1: 'free',
-            2: 'busy',
-        }
+    def test_is_slot_busy_returns_true(self, conveyor_belt_factory, factory_floor_config):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
+        conveyor_belt.put_item_in_slot(slot_number=0, item='A')
 
-    def test_get_slot_state(self, conveyor_belt_factory):
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
-        conveyor_belt.set_slot_state(2, ConveyorBeltState.BUSY)
+        assert conveyor_belt.is_slot_busy(0)
 
-        assert conveyor_belt.get_slot_state(2) == 'busy'
-        assert conveyor_belt.get_slot_state(4) is None
+    def test_is_slot_busy_returns_false(self, conveyor_belt_factory, factory_floor_config):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
 
-    def test_is_slot_busy(self, conveyor_belt_factory):
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
-        conveyor_belt.set_slot_state(2, ConveyorBeltState.BUSY)
-
-        assert conveyor_belt.is_slot_busy(2)
-        assert not conveyor_belt.is_slot_busy(1)
         assert not conveyor_belt.is_slot_busy(0)
 
-    def test_is_slot_free(self, conveyor_belt_factory):
-        conveyor_belt: ConveyorBelt = conveyor_belt_factory()
-        conveyor_belt.set_slot_state(0, ConveyorBeltState.BUSY)
-        conveyor_belt.set_slot_state(1, ConveyorBeltState.BUSY)
-        conveyor_belt.set_slot_state(2, ConveyorBeltState.FREE)
+    def test_is_slot_empty_returns_true(self, conveyor_belt_factory, factory_floor_config):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
 
-        assert conveyor_belt.is_slot_free(2)
-        assert not conveyor_belt.is_slot_free(1)
-        assert not conveyor_belt.is_slot_free(0)
+        assert conveyor_belt.is_slot_empty(0)
+
+    def test_is_slot_empty_returns_false(self, conveyor_belt_factory, factory_floor_config):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
+        conveyor_belt.enqueue('A')
+
+        assert not conveyor_belt.is_slot_empty(0)
+
+    def test_is_slot_free_returns_true(self, conveyor_belt_factory, factory_floor_config):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
+        assert conveyor_belt.is_slot_free(slot_number=0)
+
+    def test_is_slot_free_returns_false(self, conveyor_belt_factory, factory_floor_config):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
+        conveyor_belt.put_item_in_slot(slot_number=0, item='A')
+
+        assert not conveyor_belt.is_slot_free(slot_number=0)
+
+    def test_retrieve_item_from_slot(
+            self, conveyor_belt_factory, factory_floor_config
+    ):
+        conveyor_belt: ConveyorBelt = conveyor_belt_factory(config=factory_floor_config)
+        conveyor_belt.enqueue('A')
+
+        assert conveyor_belt.retrieve_item_from_slot(slot_number=0) == 'A'
+        assert conveyor_belt.is_slot_busy(slot_number=0)
+        assert conveyor_belt.check_item_at_slot(slot_number=0) == factory_floor_config.empty_code
+
