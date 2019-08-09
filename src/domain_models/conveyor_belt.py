@@ -71,12 +71,15 @@ class ConveyorBelt(Queue):
     def is_slot_busy(self, slot_number: int) -> bool:
         return self.get_slot_state(slot_number) == ConveyorBeltState.BUSY
 
+    def is_slot_empty(self, slot_number: int) -> bool:
+        return self.items[slot_number] == self.config.empty_code
+
     def is_slot_free(self, slot_number: int) -> bool:
         return self.get_slot_state(slot_number) == ConveyorBeltState.FREE
 
     def retrieve_item_from_slot(self, slot_number: int):
-        self.set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
         self.__check_validity_of_slot_number(slot_number)
+        self.set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
         item = self.check_at_slot(slot_number=slot_number)
         self.put_item_in_slot(slot_number=slot_number, item=self.config.empty_code)
 
@@ -84,4 +87,5 @@ class ConveyorBelt(Queue):
 
     def put_item_in_slot(self, slot_number: int, item: str):
         self.__check_validity_of_slot_number(slot_number)
+        self.set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
         self.items[slot_number] = item
