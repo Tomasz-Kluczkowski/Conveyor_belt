@@ -88,7 +88,7 @@ class TestWorker:
         assert basic_worker.operation_times.BUILDING == 4
         assert basic_worker.remaining_time_of_operation == 0
 
-    def test_take_item(self, basic_worker):
+    def test_pickup_item(self, basic_worker):
         basic_worker.conveyor_belt.enqueue('A')
         basic_worker.pickup_item()
         assert basic_worker.items == ['A']
@@ -152,12 +152,6 @@ class TestFactoryFloor:
             1
         ]
 
-    def test_add_new_item_to_belt_no_space_on_belt(self, factory_floor_factory, feeder_factory, factory_floor_config):
-        factory_floor: FactoryFloor = factory_floor_factory()
-        factory_floor.add_new_item_to_belt()
-        assert factory_floor.conveyor_belt.size == 3
-        assert factory_floor.conveyor_belt.dequeue() == factory_floor_config.empty_code
-
     def test_basic_run_belt(self, factory_floor_factory, feeder_factory, factory_floor_config):
         feeder = feeder_factory(feed_input=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
         factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder)
@@ -175,6 +169,8 @@ class TestFactoryFloor:
             7
         ]
 
+        assert factory_floor.time == 10
+
     def test_basic_run_belt_run_out_of_feed_items(self, factory_floor_factory, feeder_factory):
         feeder = feeder_factory(feed_input=[1])
         factory_floor: FactoryFloor = factory_floor_factory(feeder=feeder)
@@ -186,7 +182,9 @@ class TestFactoryFloor:
             'Insufficient amount of items available in the feed_input of the Feeder. Please check your configuration.',
         )
 
-    def test_run_factory_one_product_created(self, factory_floor_factory, feeder_factory, factory_floor_config):
+    def test_run_factory_one_product_created_by_worker_on_slot_zero(
+            self, factory_floor_factory, feeder_factory, factory_floor_config
+    ):
         factory_floor_config.num_steps = 11
         feeder = feeder_factory(
             feed_input=['A', 'B', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E']
@@ -198,7 +196,9 @@ class TestFactoryFloor:
         factory_floor.run()
         assert factory_floor.receiver.received_items == ['E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P']
 
-    def test_run_factory_two_products_created(self, factory_floor_factory, feeder_factory, factory_floor_config):
+    def test_run_factory_two_products_created_by_workers_on_slot_zero(
+            self, factory_floor_factory, feeder_factory, factory_floor_config
+    ):
         factory_floor_config.num_steps = 13
         feeder = feeder_factory(
             feed_input=['A', 'B', 'A', 'B', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E']
@@ -212,7 +212,9 @@ class TestFactoryFloor:
             'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E', 'P'
         ]
 
-    def test_run_factory_three_products_created(self, factory_floor_factory, feeder_factory, factory_floor_config):
+    def test_run_factory_three_products_created_by_workers_on_slot_zero_and_first_at_slot_one(
+            self, factory_floor_factory, feeder_factory, factory_floor_config
+    ):
         factory_floor_config.num_steps = 15
         feeder = feeder_factory(
             feed_input=['A', 'B', 'A', 'B', 'A', 'B', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E']
@@ -224,6 +226,23 @@ class TestFactoryFloor:
         factory_floor.run()
         assert factory_floor.receiver.received_items == [
             'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E', 'P', 'E', 'P'
+        ]
+
+    def test_run_factory_worker_ignores_item_not_required(
+            self, factory_floor_factory, feeder_factory, factory_floor_config
+    ):
+        factory_floor_config.num_steps = 13
+        factory_floor_config.num_pairs = 1
+        feeder = feeder_factory(
+            feed_input=['A', 'A', 'A', 'B', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E']
+        )
+        factory_floor: FactoryFloor = factory_floor_factory(
+            config=factory_floor_config,
+            feeder=feeder
+        )
+        factory_floor.run()
+        assert factory_floor.receiver.received_items == [
+            'E', 'E', 'E', 'E', 'E', 'A', 'E', 'E', 'E', 'E', 'E', 'E', 'P'
         ]
 
 
@@ -262,7 +281,7 @@ class TestConveyorBelt:
         conveyor_belt.put_item_in_slot(slot_number=0, item='A')
 
         assert conveyor_belt.is_slot_busy(slot_number=0)
-        conveyor_belt.confirm_operation_finished(slot_number=0)
+        conveyor_belt.confirm_operation_at_slot_finished(slot_number=0)
         assert not conveyor_belt.is_slot_busy(slot_number=0)
 
     def test_is_slot_busy_returns_true(self, conveyor_belt_factory, factory_floor_config):
