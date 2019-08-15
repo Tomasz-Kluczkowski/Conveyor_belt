@@ -50,7 +50,7 @@ class ConveyorBelt(Queue):
         self._set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
         self._items[slot_number] = item
 
-    def confirm_operation_finished(self, slot_number: int):
+    def confirm_operation_at_slot_finished(self, slot_number: int):
         """
         Confirms that the operation that was being carried out on slot slot_number has finished.
         This sets the state of that slot back to free.
