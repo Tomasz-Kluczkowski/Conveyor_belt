@@ -62,19 +62,16 @@ class FactoryFloor(BaseModel):
         """
         Adds new item to the conveyor belt.
         """
-        if self.conveyor_belt.size < self.conveyor_belt.config.conveyor_belt_slots:
-            new_belt_item = self.feeder.feed()
-            self.conveyor_belt.enqueue(new_belt_item)
+        new_belt_item = self.feeder.feed()
+        self.conveyor_belt.enqueue(new_belt_item)
 
     def run(self):
         """
         Main event loop.
         """
         for step in range(self.config.num_steps):
-            # move farthest item on belt to the receiver if line full
             self.push_item_to_receiver()
 
-            # get item from the feeder onto the belt
             try:
                 self.add_new_item_to_belt()
             except StopIteration:
