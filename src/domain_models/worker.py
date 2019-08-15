@@ -10,7 +10,6 @@ class WorkerState:
     PICKING_UP = 'picking_up'
     DROPPING = 'dropping'
     BUILDING = 'building'
-    READY_FOR_BUILDING = 'ready_for_building'
     FINISHED_BUILDING = 'finished_building'
 
 
@@ -55,10 +54,6 @@ class Worker(BaseModel):
                 self.conveyor_belt.is_slot_empty(self.slot_number)
         )
 
-    def build_product(self):
-        self.state = WorkerState.BUILDING
-        self.remaining_time_of_operation = WorkerOperationTimes.BUILDING
-
     def is_operating(self):
         return self.remaining_time_of_operation > 0
 
@@ -80,7 +75,8 @@ class Worker(BaseModel):
             self.state = WorkerState.IDLE
             self.conveyor_belt.confirm_operation_at_slot_finished(slot_number=self.slot_number)
         elif self.state == WorkerState.IDLE and self.is_ready_for_building():
-            self.state = WorkerState.READY_FOR_BUILDING
+            self.state = WorkerState.BUILDING
+            self.remaining_time_of_operation = WorkerOperationTimes.BUILDING
         elif self.state == WorkerState.BUILDING:
             self.state = WorkerState.FINISHED_BUILDING
 
@@ -100,9 +96,6 @@ class Worker(BaseModel):
 
         if self.can_pickup_item() and self.is_item_required():
             self.pickup_item()
-
-        if self.state == WorkerState.READY_FOR_BUILDING:
-            self.build_product()
 
         if self.can_drop_product():
             self.drop_product()
