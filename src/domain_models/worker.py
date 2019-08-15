@@ -78,7 +78,7 @@ class Worker(BaseModel):
     def update_state(self):
         if self.state in [WorkerState.PICKING_UP, WorkerState.DROPPING]:
             self.state = WorkerState.IDLE
-            self.conveyor_belt.confirm_operation_finished(slot_number=self.slot_number)
+            self.conveyor_belt.confirm_operation_at_slot_finished(slot_number=self.slot_number)
         elif self.state == WorkerState.IDLE and self.is_ready_for_building():
             self.state = WorkerState.READY_FOR_BUILDING
         elif self.state == WorkerState.BUILDING:
