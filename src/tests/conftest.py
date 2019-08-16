@@ -1,3 +1,5 @@
+from typing import Type
+
 import pytest
 
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
@@ -30,12 +32,12 @@ def basic_receiver():
 
 
 @pytest.fixture()
-def worker_factory():
+def worker_factory() -> Type[WorkerFactory]:
     return WorkerFactory
 
 
 @pytest.fixture()
-def basic_worker():
+def basic_worker() -> WorkerFactory:
     return WorkerFactory()
 
 
