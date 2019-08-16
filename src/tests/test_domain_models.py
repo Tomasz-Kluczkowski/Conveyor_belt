@@ -3,12 +3,21 @@ import pytest
 from unittest import mock
 
 from src.domain_models.common import BaseModel
-from src.domain_models.conveyor_belt import ConveyorBelt, ConveyorBeltState
+from src.domain_models.conveyor_belt import ConveyorBelt
 from src.domain_models.factory_floor import FactoryFloor
 from src.domain_models.feeder import Feeder
-from src.domain_models.worker import WorkerState
+from src.domain_models.worker import Worker
 from src.exceptions.exceptions import FactoryConfigError, FeederConfigError
-from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
+
+
+@pytest.fixture
+def worker_operation_times():
+    class TestWorkerOperationTimes:
+        PICKING_UP = 4
+        DROPPING = 4
+        BUILDING = 4
+
+    return TestWorkerOperationTimes
 
 
 class TestBaseModel:
@@ -79,19 +88,98 @@ class TestWorker:
     def test_init(self, basic_worker):
         assert basic_worker.id == 'worker_id'
         assert basic_worker.name == 'Tomek'
-        assert isinstance(basic_worker.config, FactoryFloorConfig)
-        assert basic_worker.items == []
-        assert basic_worker.state == WorkerState.IDLE
-        assert basic_worker.slot_number == 0
-        assert basic_worker.operation_times.PICKING_UP == 1
-        assert basic_worker.operation_times.DROPPING == 1
-        assert basic_worker.operation_times.BUILDING == 4
-        assert basic_worker.remaining_time_of_operation == 0
 
-    def test_pickup_item(self, basic_worker):
-        basic_worker.conveyor_belt.enqueue('A')
-        basic_worker.pickup_item()
-        assert basic_worker.items == ['A']
+    def test_pickups_up_component(self, worker_factory, basic_conveyor_belt):
+        basic_conveyor_belt.enqueue('A')
+        worker = worker_factory(conveyor_belt=basic_conveyor_belt)
+        worker.work()
+        assert worker.components == ['A']
+
+    def test_cannot_pickup_up_component_if_slot_used_by_another_worker(self, worker_factory, basic_conveyor_belt):
+        basic_conveyor_belt.put_item_in_slot(slot_number=0, item='A')
+        worker = worker_factory(conveyor_belt=basic_conveyor_belt)
+        worker.work()
+        assert worker.components == []
+
+    def test_ignores_component_if_the_same(self, worker_factory, basic_conveyor_belt):
+        worker = worker_factory(conveyor_belt=basic_conveyor_belt)
+
+        for i in range(2):
+            basic_conveyor_belt.enqueue('A')
+            basic_conveyor_belt.dequeue()
+            worker.work()
+
+        assert worker.components == ['A']
+
+    def test_completes_pickup_operation_in_correct_time(
+            self, worker_factory, basic_conveyor_belt: ConveyorBelt, worker_operation_times
+    ):
+        basic_conveyor_belt.enqueue('A')
+        worker = worker_factory(
+            conveyor_belt=basic_conveyor_belt,
+            operation_times=worker_operation_times
+        )
+
+        for i in range(worker_operation_times.PICKING_UP):
+            worker.work()
+
+        assert basic_conveyor_belt.is_slot_free(slot_number=0)
+
+    def test_creates_product(self, worker_factory, basic_conveyor_belt):
+        worker: Worker = worker_factory(conveyor_belt=basic_conveyor_belt)
+
+        feed_items = ['A', 'B', 'E', 'E', 'E', 'E']
+        for feed_item in feed_items:
+            basic_conveyor_belt.enqueue(feed_item)
+            basic_conveyor_belt.dequeue()
+            worker.work()
+        assert worker.components == ['P']
+
+    def test_drops_product(self, worker_factory, basic_conveyor_belt):
+        worker: Worker = worker_factory(conveyor_belt=basic_conveyor_belt)
+
+        feed_items = ['A', 'B', 'E', 'E', 'E', 'E', 'E']
+        for feed_item in feed_items:
+            basic_conveyor_belt.enqueue(feed_item)
+            basic_conveyor_belt.dequeue()
+            worker.work()
+        assert worker.components == []
+
+    def test_completes_drop_product_operation_in_correct_time(
+            self, worker_factory, basic_conveyor_belt, worker_operation_times
+    ):
+        worker_operation_times.PICKING_UP = 1
+        worker = worker_factory(
+            conveyor_belt=basic_conveyor_belt,
+            operation_times=worker_operation_times
+        )
+
+        feed_items = ['A', 'B', 'E', 'E', 'E', 'E']
+        for feed_item in feed_items:
+            basic_conveyor_belt.enqueue(feed_item)
+            basic_conveyor_belt.dequeue()
+            worker.work()
+        assert worker.components == ['P']
+
+        for i in range(worker_operation_times.DROPPING):
+            worker.work()
+
+        assert worker.components == []
+        assert basic_conveyor_belt.is_slot_free(slot_number=0)
+
+    def test_cannot_drop_product_if_slot_is_used_by_another_worker(self, worker_factory, basic_conveyor_belt):
+        worker: Worker = worker_factory(conveyor_belt=basic_conveyor_belt)
+
+        feed_items = ['A', 'B', 'E', 'E', 'E', 'E']
+        for feed_item in feed_items:
+            basic_conveyor_belt.enqueue(feed_item)
+            basic_conveyor_belt.dequeue()
+            worker.work()
+
+        basic_conveyor_belt.put_item_in_slot(slot_number=0, item='A')
+        worker.work()
+
+        assert worker.components == ['P']
 
 
 class TestFactoryFloor:
@@ -194,7 +282,7 @@ class TestFactoryFloor:
             feeder=feeder
         )
         factory_floor.run()
-        assert factory_floor.receiver.received_items == ['E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P']
+        assert factory_floor.receiver.received_items == ['E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E']
 
     def test_run_factory_two_products_created_by_workers_on_slot_zero(
             self, factory_floor_factory, feeder_factory, factory_floor_config
@@ -209,7 +297,7 @@ class TestFactoryFloor:
         )
         factory_floor.run()
         assert factory_floor.receiver.received_items == [
-            'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E', 'P'
+            'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E', 'P', 'E'
         ]
 
     def test_run_factory_three_products_created_by_workers_on_slot_zero_and_first_at_slot_one(
@@ -225,7 +313,7 @@ class TestFactoryFloor:
         )
         factory_floor.run()
         assert factory_floor.receiver.received_items == [
-            'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E', 'P', 'E', 'P'
+            'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'E', 'P', 'E', 'P', 'E', 'P', 'E'
         ]
 
     def test_run_factory_worker_ignores_item_not_required(
@@ -242,7 +330,7 @@ class TestFactoryFloor:
         )
         factory_floor.run()
         assert factory_floor.receiver.received_items == [
-            'E', 'E', 'E', 'E', 'E', 'A', 'E', 'E', 'E', 'E', 'E', 'E', 'P'
+            'E', 'E', 'E', 'E', 'E', 'A', 'E', 'E', 'E', 'E', 'E', 'P', 'E'
         ]
 
 
