@@ -22,6 +22,10 @@ class ConveyorBelt(Queue):
     def slot_states(self):
         return self._slot_states
 
+    @property
+    def config(self):
+        return self._config
+
     def check_item_at_slot(self, slot_number: int) -> Any:
         """
         Returns item at a conveyor belt slot. The item remains in the slot. This is a peek operation.
