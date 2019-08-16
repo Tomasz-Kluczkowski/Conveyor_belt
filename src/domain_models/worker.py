@@ -38,21 +38,19 @@ class Worker(BaseModel):
         self.remaining_time_of_operation = 0
 
     def pickup_item(self):
-        self.state = WorkerState.PICKING_UP
         self.remaining_time_of_operation = self.operation_times.PICKING_UP
 
         item_at_slot = self.conveyor_belt.retrieve_item_from_slot(slot_number=self.slot_number)
         self.items.append(item_at_slot)
 
     def can_pickup_item(self):
-        return self.state == WorkerState.IDLE and self.conveyor_belt.is_slot_free(self.slot_number)
+        return self.conveyor_belt.is_slot_free(self.slot_number)
 
     def can_drop_product(self):
-        return (
-                self.state == WorkerState.FINISHED_BUILDING and
-                self.conveyor_belt.is_slot_free(self.slot_number) and
-                self.conveyor_belt.is_slot_empty(self.slot_number)
-        )
+        return self.conveyor_belt.is_slot_free(self.slot_number) and self.conveyor_belt.is_slot_empty(self.slot_number)
+
+    def build_product(self):
+        self.remaining_time_of_operation = WorkerOperationTimes.BUILDING
 
     def is_operating(self):
         return self.remaining_time_of_operation > 0
@@ -67,36 +65,43 @@ class Worker(BaseModel):
         item_on_belt = self.conveyor_belt.check_item_at_slot(self.slot_number)
         return item_on_belt not in self.items and item_on_belt in self.config.required_items
 
-    def execute_operation_period(self):
+    def reduce_operation_time(self):
         self.remaining_time_of_operation -= 1
 
     def update_state(self):
         if self.state in [WorkerState.PICKING_UP, WorkerState.DROPPING]:
-            self.state = WorkerState.IDLE
-            self.conveyor_belt.confirm_operation_at_slot_finished(slot_number=self.slot_number)
-        elif self.state == WorkerState.IDLE and self.is_ready_for_building():
-            self.state = WorkerState.BUILDING
-            self.remaining_time_of_operation = WorkerOperationTimes.BUILDING
-        elif self.state == WorkerState.BUILDING:
-            self.state = WorkerState.FINISHED_BUILDING
+            if self.is_not_operating():
+                self.state = WorkerState.IDLE
+                self.conveyor_belt.confirm_operation_at_slot_finished(slot_number=self.slot_number)
+
+        if self.state == WorkerState.IDLE:
+            if self.can_pickup_item() and self.is_item_required():
+                self.state = WorkerState.PICKING_UP
+                self.pickup_item()
+
+            elif self.is_ready_for_building():
+                self.state = WorkerState.BUILDING
+                self.build_product()
+
+        if self.state == WorkerState.BUILDING:
+            if self.is_not_operating():
+                self.state = WorkerState.FINISHED_BUILDING
+
+        elif self.state == WorkerState.FINISHED_BUILDING:
+            if self.can_drop_product():
+                self.state = WorkerState.DROPPING
+                self.drop_product()
 
     def drop_product(self):
-        self.state = WorkerState.DROPPING
         self.remaining_time_of_operation = self.operation_times.DROPPING
         self.conveyor_belt.put_item_in_slot(
             slot_number=self.slot_number, item=self.config.product_code)
         self.items = []
 
     def work(self):
+        # TODO: reduce time after update state and change state transitions to simpler based in diagram
+        #  assuming that it will keep working.
         if self.is_operating():
-            self.execute_operation_period()
+            self.reduce_operation_time()
 
-        if self.is_not_operating():
-            self.update_state()
-
-        if self.can_pickup_item() and self.is_item_required():
-            self.pickup_item()
-
-        if self.can_drop_product():
-            self.drop_product()
-
+        self.update_state()
