@@ -417,4 +417,3 @@ class TestConveyorBelt:
         assert conveyor_belt.retrieve_item_from_slot(slot_number=0) == 'A'
         assert conveyor_belt.is_slot_busy(slot_number=0)
         assert conveyor_belt.check_item_at_slot(slot_number=0) == factory_floor_config.empty_code
-

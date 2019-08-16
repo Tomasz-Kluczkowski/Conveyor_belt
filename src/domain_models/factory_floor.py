@@ -1,4 +1,4 @@
-from typing import List, Type
+from typing import List
 
 from src.domain_models.common import BaseModel
 from src.domain_models.conveyor_belt import ConveyorBelt

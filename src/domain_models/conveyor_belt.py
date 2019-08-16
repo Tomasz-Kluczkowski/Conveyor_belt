@@ -1,6 +1,5 @@
 from typing import Any, Union
 
-from src.exceptions.messages import INVALID_SLOT_NUMBER
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 from src.helpers.data_structures import Queue
 

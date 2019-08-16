@@ -1,7 +1,7 @@
-from typing import List, Any, Type
+from typing import Type
 
 from src.domain_models.common import BaseModel
-from src.domain_models.conveyor_belt import ConveyorBelt, ConveyorBeltState
+from src.domain_models.conveyor_belt import ConveyorBelt
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 
 
