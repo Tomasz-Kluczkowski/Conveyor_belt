@@ -13,7 +13,7 @@ class ConveyorBeltState:
 class ConveyorBelt(Queue):
     def __init__(self, config: FactoryFloorConfig):
         super(). __init__()
-        self.config = config
+        self._config = config
         self._slot_states = {}
         self._set_slot_states_to_free()
         self._set_slots_to_empty()
@@ -83,7 +83,7 @@ class ConveyorBelt(Queue):
             Slot of the conveyor belt at which we need to check if empty.
         """
 
-        return self._items[slot_number] == self.config.empty_code
+        return self._items[slot_number] == self._config.empty_code
 
     def is_slot_free(self, slot_number: int) -> bool:
         """
@@ -112,17 +112,17 @@ class ConveyorBelt(Queue):
         """
         self._set_slot_state(slot_number=slot_number, state=ConveyorBeltState.BUSY)
         item = self.check_item_at_slot(slot_number=slot_number)
-        self.put_item_in_slot(slot_number=slot_number, item=self.config.empty_code)
+        self.put_item_in_slot(slot_number=slot_number, item=self._config.empty_code)
 
         return item
 
     def _set_slot_states_to_free(self):
-        for slot_number in range(self.config.conveyor_belt_slots):
+        for slot_number in range(self._config.conveyor_belt_slots):
             self._slot_states[slot_number] = ConveyorBeltState.FREE
 
     def _set_slots_to_empty(self):
-        for slot_number in range(self.config.conveyor_belt_slots):
-            self.enqueue(self.config.empty_code)
+        for slot_number in range(self._config.conveyor_belt_slots):
+            self.enqueue(self._config.empty_code)
 
     def _set_slot_state(self, slot_number: int, state: str):
         self._slot_states[slot_number] = state
