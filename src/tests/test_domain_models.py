@@ -31,6 +31,10 @@ class TestBaseModel:
         base_model = BaseModel()
         assert base_model.id == 'uuid_id'
 
+    def test_repr_method(self):
+        base_model = BaseModel(id_='Tomek')
+        assert base_model.__repr__() == '<BaseModel(id=Tomek)>'
+
 
 class TestFeeder:
     def test_init(self, basic_feeder):
