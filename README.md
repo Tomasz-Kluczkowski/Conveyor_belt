@@ -1,6 +1,6 @@
 # Factory Floor Simulator
 
-[![Build Status](https://travis-ci.org/Tomasz-Kluczkowski/Conveyor_belt.svg?branch=master)](https://travis-ci.org/Tomasz-Kluczkowski/Conveyor_belt)
+[![Build Status](https://travis-ci.org/Tomasz-Kluczkowski/Conveyor_belt.svg?branch=master)](https://travis-ci.org/Tomasz-Kluczkowski/Conveyor_belt) [![Coverage Status](https://coveralls.io/repos/github/Tomasz-Kluczkowski/Conveyor_belt/badge.svg?branch=master)](https://coveralls.io/github/Tomasz-Kluczkowski/Conveyor_belt?branch=master)
 
 In this project I am simulating a factory floor operation.
 
