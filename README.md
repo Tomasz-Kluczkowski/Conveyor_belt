@@ -45,4 +45,4 @@ Basic principle of operation:
 - When the product is assembled and worker can operate on his conveyor belt slot (it is free and empty) the worker
 will drop the product.
 
-Test change
+
