@@ -9,6 +9,8 @@ script:
   - flake8
   - coverage erase
   - pytest --cov
+  - ls -a
 # run coveralls after successful tests
 after_success:
-  - coveralls
+  - pip install codecov
+  - codecov
