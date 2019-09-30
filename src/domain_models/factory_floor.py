@@ -21,8 +21,7 @@ class FactoryFloor(BaseModel):
                  receiver: Receiver = None,
                  conveyor_belt: ConveyorBelt = None,
                  workers: List[Worker] = None,
-                 id_: str = None):
-        super().__init__(id_)
+                 ):
 
         self.config = config if config else FactoryFloorConfig()
         self.feeder = feeder if feeder else Feeder()

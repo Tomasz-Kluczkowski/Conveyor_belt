@@ -11,14 +11,12 @@ from src.factory_floor_configuration.factory_floor_configuration import FactoryF
 class FeederFactory(factory.Factory):
     class Meta:
         model = Feeder
-    id_ = 'feeder_id'
     components = ['A', 'B', 'E']
 
 
 class ReceiverFactory(factory.Factory):
     class Meta:
         model = Receiver
-    id_ = 'receiver_id'
 
 
 class ConveyorBeltFactory(factory.Factory):
@@ -30,7 +28,6 @@ class ConveyorBeltFactory(factory.Factory):
 class WorkerFactory(factory.Factory):
     class Meta:
         model = Worker
-    id_ = 'worker_id'
     name = 'Tomek'
     slot_number = 0
     config = FactoryFloorConfig()
@@ -42,7 +39,6 @@ class FactoryFloorFactory(factory.Factory):
     class Meta:
         model = FactoryFloor
 
-    id_ = 'conveyor_belt_id'
     feeder = factory.SubFactory(FeederFactory)
     receiver = factory.SubFactory(ReceiverFactory)
     conveyor_belt = factory.SubFactory(ConveyorBeltFactory)

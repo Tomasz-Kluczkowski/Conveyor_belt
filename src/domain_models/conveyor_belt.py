@@ -1,5 +1,6 @@
 from typing import Any, Union
 
+from src.domain_models.common import BaseModel
 from src.factory_floor_configuration.factory_floor_configuration import FactoryFloorConfig
 from src.helpers.data_structures import Queue
 
@@ -9,7 +10,7 @@ class ConveyorBeltState:
     BUSY = 'busy'
 
 
-class ConveyorBelt(Queue):
+class ConveyorBelt(Queue, BaseModel):
     def __init__(self, config: FactoryFloorConfig):
         super(). __init__()
         self._config = config

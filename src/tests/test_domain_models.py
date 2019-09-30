@@ -21,24 +21,14 @@ def worker_operation_times():
 
 
 class TestBaseModel:
-    def test_init(self):
-        base_model = BaseModel(id_='base_id')
-        assert base_model.id == 'base_id'
-
-    @mock.patch('uuid.uuid4')
-    def test_auto_id(self, mock_uuid4):
-        mock_uuid4.return_value = 'uuid_id'
-        base_model = BaseModel()
-        assert base_model.id == 'uuid_id'
-
     def test_repr_method(self):
-        base_model = BaseModel(id_='Tomek')
-        assert base_model.__repr__() == '<BaseModel(id=Tomek)>'
+        base_model = BaseModel()
+        base_model.some_attribute = 'some value'
+        assert base_model.__repr__() == '<BaseModel(some_attribute=some value)>'
 
 
 class TestFeeder:
     def test_init(self, basic_feeder):
-        assert basic_feeder.id == 'feeder_id'
         assert basic_feeder.components == ['A', 'B', 'E']
 
     def test_feed_single_element_list(self, basic_feeder):
@@ -80,7 +70,6 @@ class TestFeeder:
 
 class TestReceiver:
     def test_init(self, basic_receiver):
-        assert basic_receiver.id == 'receiver_id'
         assert basic_receiver.received_items == []
 
     def test_receive(self, basic_receiver):
@@ -90,7 +79,6 @@ class TestReceiver:
 
 class TestWorker:
     def test_init(self, basic_worker):
-        assert basic_worker.id == 'worker_id'
         assert basic_worker.name == 'Tomek'
 
     def test_pickups_up_component(self, worker_factory, basic_conveyor_belt):
@@ -191,10 +179,8 @@ class TestFactoryFloor:
         factory_floor = FactoryFloor(
             feeder=basic_feeder,
             receiver=basic_receiver,
-            id_='factory_id'
         )
 
-        assert factory_floor.id == 'factory_id'
         assert factory_floor.num_pairs == 3
         assert len(factory_floor.workers) == 6
         assert factory_floor.feeder == basic_feeder
@@ -206,7 +192,6 @@ class TestFactoryFloor:
         factory_floor = FactoryFloor(
             feeder=basic_feeder,
             receiver=basic_receiver,
-            id_='factory_id',
             config=factory_floor_config
         )
 

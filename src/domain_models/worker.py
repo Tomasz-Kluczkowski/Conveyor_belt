@@ -25,8 +25,7 @@ class Worker(BaseModel):
                  slot_number: int,
                  operation_times: Type[WorkerOperationTimes],
                  name: str = '',
-                 id_: str = None):
-        super().__init__(id_)
+                 ):
         self.name = name
         self._slot_number = slot_number
         self._config = config

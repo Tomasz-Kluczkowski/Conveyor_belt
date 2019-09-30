@@ -8,8 +8,7 @@ class Receiver(BaseModel):
     Use to receive items from the conveyor belt. Stores items in order of appearance and provides methods to obtain
     efficiency statistics for the plant operation.
     """
-    def __init__(self, id_: str = None):
-        super().__init__(id_)
+    def __init__(self):
         self.__received_items: List[Any] = []
 
     @property
