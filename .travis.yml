@@ -10,7 +10,7 @@ script:
   - coverage erase
   - pytest --cov
   - ls -a
-# run coveralls after successful tests
+# run code coverage check after successful tests
 after_success:
   - pip install codecov
   - codecov
