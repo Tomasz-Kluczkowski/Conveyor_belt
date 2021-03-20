@@ -12,7 +12,7 @@ Faker==1.0.2
 flake8==3.7.4
 flake8-html==0.4.0
 inflect==2.1.0
-Jinja2==2.10
+Jinja2==2.11.3
 jinja2-pluralize==0.3.0
 MarkupSafe==1.1.0
 mccabe==0.6.1
